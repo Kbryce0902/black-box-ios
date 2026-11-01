@@ -208,11 +208,26 @@ struct SettingsView: View {
                 Section("Gemini") {
                     Text(m.hasGeminiKey ? "API key ••••••••" : "No API key stored").font(.caption).foregroundStyle(.secondary)
                     SecureField("Enter replacement API key", text: $geminiKey).textInputAutocapitalization(.never).autocorrectionDisabled()
-                    Button("Store key") { m.perform { try m.saveKey(geminiKey, provider: "gemini"); geminiKey = "" } }
+                    Button("Save and check key") { m.perform { try m.saveKey(geminiKey, provider: "gemini"); geminiKey = "" } }
+                        .disabled(geminiKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                     TextField("Model ID", text: $m.settings.model).textInputAutocapitalization(.never).autocorrectionDisabled()
-                    Button("Validate key and model") { m.perform { try await m.validateGemini() } }
+                        .onChange(of: m.settings.model) { _, value in m.geminiModelChanged(value) }
+                    if m.geminiState.isChecking {
+                        ProgressView("Checking Gemini…")
+                        Button("Cancel connection check", role: .cancel) { m.cancelGeminiValidation() }
+                    } else {
+                        Button("Check connection") { m.validateGemini() }.disabled(!m.hasGeminiKey)
+                    }
+                    Text(m.geminiState.message).font(.callout)
+                        .foregroundStyle(m.geminiState.phase == .failed ? Color.orange : Color.secondary)
+                        .textSelection(.enabled).accessibilityIdentifier("gemini.connection.status")
+                    if !m.geminiState.models.isEmpty {
+                        Picker("Google models", selection: $m.settings.model) {
+                            if !m.geminiState.models.contains(m.settings.model) { Text("Choose a model").tag(m.settings.model) }
+                            ForEach(m.geminiState.models, id: \.self) { Text($0).tag($0) }
+                        }
+                    }
                     Button("Delete Gemini key", role: .destructive) { m.perform { try m.deleteKey("gemini") } }
-                    Text(m.providerStatus).font(.caption)
                 }
                 Section("ElevenLabs voice") {
                     Text(m.hasVoiceKey ? "API key ••••••••" : "No API key stored").font(.caption).foregroundStyle(.secondary)
@@ -221,6 +236,7 @@ struct SettingsView: View {
                     TextField("Voice ID", text: $m.settings.voiceID).textInputAutocapitalization(.never).autocorrectionDisabled()
                     TextField("Speech model ID", text: $m.settings.speechModel).textInputAutocapitalization(.never).autocorrectionDisabled()
                     Button("Validate voice access") { m.perform { try await m.validateVoice() } }
+                    Text(m.voiceStatus).font(.caption).textSelection(.enabled)
                     Button("Delete ElevenLabs key", role: .destructive) { m.perform { try m.deleteKey("elevenlabs") } }
                     Text("Use an accessible authorized voice ID from ElevenLabs. Voice creation and verification are separate from app setup.").font(.caption).foregroundStyle(.secondary)
                 }
@@ -264,6 +280,7 @@ struct SettingsView: View {
                     Button("Open iPhone settings") { if let u = URL(string: UIApplication.openSettingsURLString) { UIApplication.shared.open(u) } }
                 }
             }.navigationTitle("Settings").disabled(m.busy)
+                .task { m.checkSavedGeminiKey() }
                 .sheet(item: $editingMemory) { memory in MemoryEditor(memory: memory, save: { value in m.perform { try m.saveMemory(value) } }) }
         }
     }

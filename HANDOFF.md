@@ -1,7 +1,50 @@
 # Black_Box implementation handoff
 
-Updated 2026-11-01. Source version **0.1.0 development**. Continue this repository;
+Updated 2026-11-01. Source version **0.1.1 development**. Continue this repository;
 do not restart from a proposal.
+
+## Gemini setup fix — 0.1.1
+
+Owner reports that 0.1.0 installed through SideStore and launches on the phone.
+The Settings screenshot shows a stored key with the static validation-pending
+label. This does not identify an actual Google authentication error.
+
+Confirmed code defects: saving the key did not start validation; failed checks
+only set a separate alert and never replaced the pending status; there was no
+in-progress state, bounded UI deadline or displayed returned-model selection.
+Gemini and ElevenLabs also shared one status label. Google's current official
+documentation confirms gemini-3.8-flash is a valid ID; no default-model swap or
+claim about this key's access was justified.
+
+Implemented in the same app:
+- Saving a Gemini key automatically starts a metadata-only check. Settings also
+  checks an already stored key when opened. Keys remain in the same Keychain
+  service; SQLite location and bundle identifier are unchanged.
+- Progress, cancellation, success, missing-model and failure states are inline.
+  A 25-second independent deadline clears progress even if transport cancellation
+  is ignored. Revision IDs reject responses after replacement, deletion or timeout.
+- Model discovery follows bounded pagination, filters generateContent support,
+  normalizes models/ prefixes and populates a native picker with returned IDs.
+  Selection is saved. Model listing does not prove inference/quota access.
+- Gemini HTTP errors retain bounded, sanitized Google status/reason/message;
+  known echoed keys are removed. No raw response body/header/key is logged.
+- ElevenLabs uses its own status. Native speech and RDC gates are unchanged.
+- Release 0.1.1, build 2. Packaging derives the artifact version from Info.plist.
+
+Checks: portable core build PASS; **48 tests passed, 0 failures** on Linux.
+The 14 new regressions cover catalogs/pagination, bad keys/permissions/quota,
+offline status, deadline, retry, replacement/deletion races, model changes and
+key redaction. Native syntax and shell/YAML/version checks PASS. Native Mac
+compilation of 0.1.1 is the next step. No user API key or live Google success was
+available here; do not substitute fixture results for that proof.
+
+Official references checked 2026-11-01:
+https://ai.google.dev/api/models
+https://ai.google.dev/gemini-api/docs/models/gemini-3.8-flash
+https://ai.google.dev/gemini-api/docs/api-key
+
+The release evidence below is the earlier 0.1.0 build until the 0.1.1 Mac run is
+completed and recorded.
 
 ## Current outcome
 

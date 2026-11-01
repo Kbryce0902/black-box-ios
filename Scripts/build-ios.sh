@@ -12,6 +12,8 @@ fi
 xcodebuild -version
 xcodebuild -showsdks
 mkdir -p build
+version="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' iOS/BlackBox/Info.plist)"
+artifact="BlackBox-${version}-unsigned.ipa"
 case "${1:-simulator}" in
   simulator)
     xcodebuild -project BlackBox.xcodeproj -scheme BlackBox -configuration Debug \
@@ -31,11 +33,11 @@ case "${1:-simulator}" in
     trap 'rm -rf "$staging"' EXIT
     mkdir -p "$staging/Payload"
     ditto "$app_path" "$staging/Payload/BlackBox.app"
-    (cd "$staging" && /usr/bin/zip -qry BlackBox-0.1.0-unsigned.ipa Payload)
-    python3 Scripts/verify-ipa.py "$staging/BlackBox-0.1.0-unsigned.ipa"
-    mv -f "$staging/BlackBox-0.1.0-unsigned.ipa" build/BlackBox-0.1.0-unsigned.ipa
-    (cd build && shasum -a 256 BlackBox-0.1.0-unsigned.ipa > BlackBox-0.1.0-unsigned.ipa.sha256)
-    echo 'Created build/BlackBox-0.1.0-unsigned.ipa. It must be re-signed by SideStore; device installation is unverified.'
+    (cd "$staging" && /usr/bin/zip -qry "$artifact" Payload)
+    python3 Scripts/verify-ipa.py "$staging/$artifact"
+    mv -f "$staging/$artifact" "build/$artifact"
+    (cd build && shasum -a 256 "$artifact" > "$artifact.sha256")
+    echo "Created build/$artifact. It must be re-signed by SideStore; device installation is unverified."
     ;;
   *) echo 'Usage: Scripts/build-ios.sh [simulator|unsigned]' >&2; exit 2 ;;
 esac

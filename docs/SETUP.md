@@ -47,6 +47,15 @@ If SideStore changes the bundle identifier, verify independent Keychain storage 
 
 ## App provider setup
 
+0.1.1 changes Gemini setup: **Save and check key** stores it securely and starts
+a metadata-only check. A progress indicator ends with a result or a visible
+error within 25 seconds. An already stored key is checked when Settings opens.
+Use **Check connection** to retry, or **Cancel connection check** to stop it.
+If the configured model is not returned, choose an ID from **Google models**.
+Google's model listing is separate from actual inference and available quota;
+send a message or explicitly run the response harness to test that next.
+
+
 1. Open Settings. Store the Gemini and ElevenLabs keys separately. After storage the input clears and only a masked presence indicator is shown. Validate the Gemini key/model and ElevenLabs voice access.
 2. Save the configured model, voice ID and limits. Explicitly run the short inference and playback harness tests; these consume your provider quota. No paid service is enabled by the app.
 3. Check RDC discovery. Supply only a provider-issued **public** client ID if dynamic registration still returns a secret. Start Sign in with PKCE. Complete the system browser consent/callback flow. Never paste a token from ChatGPT or another application.

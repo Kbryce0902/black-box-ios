@@ -15,7 +15,8 @@ import BlackBoxCore
     @Published var streamingText = ""
     @Published var busy = false
     @Published var error: String?
-    @Published var providerStatus = "Keys not validated"
+    @Published var geminiState = GeminiValidationSnapshot()
+    @Published var voiceStatus = "Voice access not checked"
     @Published var helperStatus = "Desktop helpers unverified"
     @Published var checks: [String] = []
     @Published var reviewTool: ValidatedTool?
@@ -25,6 +26,7 @@ import BlackBoxCore
     let audio = AudioController()
     private var repository: Repository?
     private let vault = KeychainStore()
+    private let geminiValidation = GeminiValidationController()
     private var running: Task<Void, Never>?
     private var activeID: String?
     private var reviewContinuation: CheckedContinuation<Bool, Never>?
@@ -50,6 +52,8 @@ import BlackBoxCore
             checks = try store.all([String].self, kind: "diagnostics").first ?? []
             try store.recover(); try reload(); try refreshKeyPresence()
         } catch { self.error = "Local startup failed: \(error.localizedDescription). Existing data was preserved." }
+        geminiValidation.onChange = { [weak self] in self?.geminiState = $0 }
+        if hasGeminiKey { geminiValidation.keyStored() }
         audio.onFinal = { [weak self] text in
             guard let self, !self.busy else { return }; self.draft = text; self.send()
         }
@@ -67,16 +71,40 @@ import BlackBoxCore
     func saveKey(_ key: String, provider: String) throws {
         let key = key.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !key.isEmpty else { throw BBError.invalid("Enter a nonempty API key.") }
-        try vault.set(Data(key.utf8), account: provider); try refreshKeyPresence(); providerStatus = "Key stored · validation pending"
+        guard ["gemini", "elevenlabs"].contains(provider) else { throw BBError.invalid("Unknown key provider.") }
+        try vault.set(Data(key.utf8), account: provider); try refreshKeyPresence()
+        if provider == "gemini" { geminiValidation.keyStored(); validateGemini() }
+        else { voiceStatus = "Voice key saved. Enter a voice ID, then check voice access." }
     }
-    func deleteKey(_ provider: String) throws { try vault.delete(provider); try refreshKeyPresence(); providerStatus = "Key removed" }
+    func deleteKey(_ provider: String) throws {
+        try vault.delete(provider); try refreshKeyPresence()
+        if provider == "gemini" { geminiValidation.clear() }
+        else { voiceStatus = "Voice key removed" }
+    }
     func gemini() throws -> GeminiClient { GeminiClient(key: try vault.string("gemini"), model: settings.model) }
     func voice() throws -> ElevenLabsClient { ElevenLabsClient(key: try vault.string("elevenlabs"), voiceID: settings.voiceID, model: settings.speechModel) }
-    func validateGemini() async throws {
-        let models = try await gemini().validate(); providerStatus = "Gemini model validated"
-        recordCheck("PASS · Gemini key/model listed (\(models.count) models). Inference test is separate.")
+    func validateGemini() {
+        do {
+            settings.model = GeminiClient.normalizedModelID(settings.model)
+            try saveSettings()
+            geminiValidation.check(key: try vault.string("gemini"), model: settings.model)
+        } catch { geminiValidation.fail(error) }
     }
-    func validateVoice() async throws { try await voice().validate(); recordCheck("PASS · ElevenLabs voice access. Playback still needs a listening test.") }
+    func checkSavedGeminiKey() {
+        if hasGeminiKey, geminiState.phase == .stored { validateGemini() }
+    }
+    func cancelGeminiValidation() { geminiValidation.cancel() }
+    func geminiModelChanged(_ value: String) {
+        geminiValidation.selectModel(value)
+        do { try saveSettings() } catch { self.error = error.localizedDescription }
+    }
+    func validateVoice() async throws {
+        voiceStatus = "Checking voice access…"
+        do {
+            try await voice().validate(); voiceStatus = "Voice access checked. Playback still needs a listening test."
+            recordCheck("PASS · ElevenLabs voice access. Playback still needs a listening test.")
+        } catch { voiceStatus = error.localizedDescription; throw error }
+    }
     func testGemini() async throws {
         let reply = try await gemini().generate(history: [["role": "user", "parts": [["text": "Reply with: Black_Box online."]]]], system: "Keep the response to one sentence.", tools: [], grounded: false, onText: { _ in })
         recordCheck("PASS · Gemini direct response: \(reply.text) · \(reply.tokens) reported tokens")
@@ -132,7 +160,7 @@ import BlackBoxCore
         if let activeID { do { try repository?.cancel(activeID); try reload() } catch { self.error = error.localizedDescription } }
         confirmReview(false); running?.cancel(); audio.cancelCapture()
     }
-    func suspend() { cancelTask(); audio.interrupt(); verifiedHelperDevice = nil }
+    func suspend() { cancelTask(); geminiValidation.cancel(); audio.interrupt(); verifiedHelperDevice = nil }
     func resume() async {
         do {
             if !busy { try repository?.recover(); try reload() }

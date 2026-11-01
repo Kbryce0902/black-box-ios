@@ -12,22 +12,58 @@ public struct GeminiClient: ReasoningClient {
     private let model: String
     private let http: any HTTPClient
     public init(key: String, model: String, http: any HTTPClient = DirectHTTP()) {
-        self.key = key; self.model = model; self.http = http
+        self.key = key.trimmingCharacters(in: .whitespacesAndNewlines)
+        self.model = Self.normalizedModelID(model); self.http = http
+    }
+    public static func normalizedModelID(_ value: String) -> String {
+        let value = value.trimmingCharacters(in: .whitespacesAndNewlines)
+        return value.hasPrefix("models/") ? String(value.dropFirst(7)) : value
+    }
+    /// Metadata only. Listing a model does not prove inference quota or billing access.
+    public func availableModels() async throws -> [String] {
+        guard !key.isEmpty else { throw BBError.setup("Enter a Gemini API key in Settings.") }
+        var found = Set<String>(); var visited = Set<String>(); var page: String?
+        for _ in 0..<10 {
+            try Task.checkCancellation()
+            var url = URLComponents(string: "https://generativelanguage.googleapis.com/v1beta/models")!
+            url.queryItems = [URLQueryItem(name: "pageSize", value: "1000")]
+            if let page { url.queryItems?.append(URLQueryItem(name: "pageToken", value: page)) }
+            var r = URLRequest(url: url.url!, cachePolicy: .reloadIgnoringLocalCacheData, timeoutInterval: 20)
+            r.setValue(key, forHTTPHeaderField: "x-goog-api-key")
+            let (data, response) = try await http.data(r)
+            guard (200..<300).contains(response.statusCode) else {
+                throw GeminiAPIError(data: data, statusCode: response.statusCode, key: key)
+            }
+            let value = try JSONValue.parse(data)
+            guard value.object != nil, value["error"] == .null,
+                  value["models"] == .null || value["models"].isArray else {
+                throw BBError.wire("Google returned an unreadable model list. Try checking the connection again.")
+            }
+            for item in value["models"].array where item["supportedGenerationMethods"].array.contains("generateContent") {
+                guard let name = item["name"].string else { continue }
+                let id = Self.normalizedModelID(name)
+                if id.hasPrefix("gemini-"), Self.validModelID(id) { found.insert(id) }
+            }
+            guard let next = value["nextPageToken"].string, !next.isEmpty else { return found.sorted() }
+            guard visited.insert(next).inserted else { throw BBError.wire("Google repeated a model-list page. Try checking again.") }
+            page = next
+        }
+        throw BBError.wire("Google's model list exceeded the connection-check limit. Try again later.")
     }
     public func validate() async throws -> [String] {
-        var r = URLRequest(url: URL(string: "https://generativelanguage.googleapis.com/v1beta/models?pageSize=1000")!)
-        r.setValue(key, forHTTPHeaderField: "x-goog-api-key")
-        let (d, _) = try await http.data(r)
-        let models = try JSONValue.parse(d)["models"].array
-        guard models.contains(where: { $0["name"].string == "models/" + model && $0["supportedGenerationMethods"].array.contains("generateContent") }) else {
-            throw BBError.setup("Configured model is unavailable for generateContent on this key. Choose a returned model.")
+        let models = try await availableModels()
+        guard models.contains(model) else {
+            throw BBError.setup("Google accepted the key, but the selected model is not in its model list. Choose a returned model in Settings.")
         }
-        return models.compactMap { $0["name"].string }
+        return models.map { "models/" + $0 }
+    }
+    private static func validModelID(_ value: String) -> Bool {
+        !value.isEmpty && value.utf8.allSatisfy { (65...90).contains($0) || (97...122).contains($0) || (48...57).contains($0) || [45, 46, 95].contains($0) }
     }
     public func generate(history: [JSONValue], system: String, tools: [JSONValue], grounded: Bool,
                          onText: @escaping @Sendable (String) async -> Void) async throws -> ModelReply {
         guard !key.isEmpty else { throw BBError.setup("Enter a Gemini API key in Settings.") }
-        guard !model.isEmpty, model.allSatisfy({ $0.isLetter || $0.isNumber || "-._".contains($0) }) else { throw BBError.invalid("Invalid model identifier.") }
+        guard Self.validModelID(model) else { throw BBError.invalid("Invalid model identifier.") }
         var body: JSONValue = ["contents": .array(history), "systemInstruction": ["parts": [["text": .string(system)]]],
                                "generationConfig": ["maxOutputTokens": 2048]]
         var o = body.object!

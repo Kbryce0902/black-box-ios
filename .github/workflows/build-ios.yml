@@ -58,15 +58,15 @@ jobs:
         run: |
           set -euo pipefail
           bash Scripts/build-ios.sh unsigned 2>&1 | tee build/logs/device-build.log
-          python3 Scripts/verify-ipa.py build/BlackBox-0.1.0-unsigned.ipa | tee build/logs/ipa-verification.json
+          python3 Scripts/verify-ipa.py build/BlackBox-*-unsigned.ipa | tee build/logs/ipa-verification.json
 
       - name: Upload the verified IPA and checksum
         uses: actions/upload-artifact@v4
         with:
-          name: BlackBox-0.1.0-SideStore
+          name: BlackBox-SideStore
           path: |
-            build/BlackBox-0.1.0-unsigned.ipa
-            build/BlackBox-0.1.0-unsigned.ipa.sha256
+            build/BlackBox-*-unsigned.ipa
+            build/BlackBox-*-unsigned.ipa.sha256
           if-no-files-found: error
           retention-days: 1
           compression-level: 0

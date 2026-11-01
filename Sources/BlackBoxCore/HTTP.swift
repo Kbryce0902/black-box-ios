@@ -18,7 +18,12 @@ public struct DirectHTTP: HTTPClient {
     public func data(_ request: URLRequest) async throws -> (Data, HTTPURLResponse) {
         let (data, response) = try await Self.session.data(for: request)
         guard let response = response as? HTTPURLResponse else { throw BBError.wire("Missing HTTP response.") }
-        guard (200..<300).contains(response.statusCode) else { throw BBError.http(response.statusCode) }
+        guard (200..<300).contains(response.statusCode) else {
+            if request.url?.host == "generativelanguage.googleapis.com" {
+                throw GeminiAPIError(data: data, statusCode: response.statusCode, key: request.value(forHTTPHeaderField: "x-goog-api-key") ?? "")
+            }
+            throw BBError.http(response.statusCode)
+        }
         guard data.count <= 12_000_000 else { throw BBError.limit }
         return (data, response)
     }
@@ -26,7 +31,14 @@ public struct DirectHTTP: HTTPClient {
         #if canImport(Darwin)
         let (bytes, response) = try await Self.session.bytes(for: request)
         guard let response = response as? HTTPURLResponse else { throw BBError.wire("Missing HTTP response.") }
-        guard (200..<300).contains(response.statusCode) else { throw BBError.http(response.statusCode) }
+        guard (200..<300).contains(response.statusCode) else {
+            if request.url?.host == "generativelanguage.googleapis.com" {
+                var errorData = Data()
+                for try await byte in bytes { errorData.append(byte); if errorData.count >= 32768 { break } }
+                throw GeminiAPIError(data: errorData, statusCode: response.statusCode, key: request.value(forHTTPHeaderField: "x-goog-api-key") ?? "")
+            }
+            throw BBError.http(response.statusCode)
+        }
         return AsyncThrowingStream { continuation in
             let task = Task {
                 do {

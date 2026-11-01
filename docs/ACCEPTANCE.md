@@ -8,7 +8,8 @@ Statuses below distinguish completed compilation from pending real-device checks
 | Simulator | Simulator compile and execution | PENDING |
 | IPA packaging | Physical iOS Mach-O, ZIP integrity and exact downloaded checksums | PASS — 783221 bytes; SHA-256 in HANDOFF.md |
 | Phone identity | Runtime hw.machine and OS/build; actual target confirmed | PENDING |
-| SideStore | Re-signed install, launch and refresh on actual OS | PENDING |
+| SideStore | Re-signed install, launch and refresh on actual OS | 0.1.0 install and launch reported by owner; refresh and 0.1.1 acceptance pending |
+| Gemini setup feedback | Save starts checking; errors/deadline replace progress; returned model can be selected | 48 portable tests PASS including 14 Gemini regressions; real-key verification pending |
 | Gemini direct | Native API response with user's key and selected model | PENDING |
 | ElevenLabs | Audible streamed reply using configured authorized voice ID | PENDING |
 | RDC registration | Public native registration, no secret, exact callback | BLOCKED by tested DCR result |

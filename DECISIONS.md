@@ -22,6 +22,16 @@
 The Linux SwiftPM test launcher intermittently crashes in this execution host while monitoring `/proc`. A serial build succeeds, and invoking the produced XCTest binary directly succeeds. Both the limitation and the final direct test output are retained. This is a host verification workaround, not an iOS runtime workaround.
 # Compilation follow-up — 2026-11-01
 
+- 0.1.1 fixes Gemini setup in the existing app. Saving checks metadata
+  automatically, with an independent UI deadline, cancellation and explicit
+  inline results. Metadata checks never automatically generate paid inference.
+- Google model listing and actual inference are separate proofs. Preserve the
+  configured model, show returned model IDs, and never silently swap providers
+  or claim a successful reply from a metadata response.
+- Validation errors retain bounded/redacted Google fields. Keys stay out of
+  logs, model context, source and network URLs. Old async results must not change
+  state after key replacement/deletion or a deadline.
+
 - The owner authorized the dedicated public GitHub repository on 2026-11-01.
   `Kbryce0902/black-box-ios` is created and verified. Source upload and the Mac
   build succeeded; exact source/run/digest are recorded in HANDOFF.md.

@@ -57,3 +57,19 @@ A terminal result is one complete JSON line with `marker: BLACKBOX_HELPER_V1`, m
 - Reads/searches/allowlisted launches/media require no repeated approval. New folder/file mutations get a concrete review. Destructive, financial, communication, installation and privileged tools are absent.
 - Speech stop and task cancellation are distinct. Partial recognition never enters the execution loop.
 - Documents/web/tool output/memories are data, never authority to expand tools, paths, device selection or permissions.
+# Gemini setup validation (0.1.1)
+
+- Native Settings uses GeminiValidationController, also exercised by portable
+  regression tests. States: noKey, stored, checking, checked, chooseModel, failed.
+- Saving/replacing starts a metadata check; deleting cancels and clears its
+  catalog. A 25-second independent deadline ends visible progress, and revision
+  IDs suppress stale results. Cancellation is a retryable terminal UI outcome.
+- Model discovery uses Google's fixed v1beta/models endpoint, x-goog-api-key
+  header and bounded pageToken pagination. No key is included in a URL.
+- checked means Google accepted the list request and included the selected ID;
+  it does not prove generation, billing or quota. A missing model retains the
+  returned choices. Only user selection changes the configured model.
+- Google HTTP errors keep sanitized fields only; raw bodies and keys are not
+  persisted. API key/model/settings changes retain the existing Keychain and
+  storage identities across this update.
+
