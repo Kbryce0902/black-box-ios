@@ -257,8 +257,10 @@ struct SettingsView: View {
                     }
                     Button("Test voice (uses API quota)") { m.perform { try m.testVoice() } }
                         .disabled(!m.hasVoiceKey || m.settings.voiceID.isEmpty || m.voiceState.isChecking || audio.speaking)
+                    Button("Test device audio (no API usage)") { audio.testDeviceAudio() }.disabled(audio.speaking)
                     if audio.speaking { Button("Stop test speech") { audio.stopSpeech() } }
                     Text(audio.status).font(.caption).textSelection(.enabled)
+                    if !audio.outputRoute.isEmpty { Text("Output: " + audio.outputRoute).font(.caption).foregroundStyle(.secondary) }
                     Button("Delete ElevenLabs key", role: .destructive) { m.perform { try m.deleteKey("elevenlabs") } }
                     Text("Use an accessible authorized voice ID from ElevenLabs. Voice creation and verification are separate from app setup.").font(.caption).foregroundStyle(.secondary)
                 }

@@ -51,11 +51,14 @@ public struct DirectHTTP: HTTPClient {
         return AsyncThrowingStream { continuation in
             let task = Task {
                 do {
+                    // PCM bytes are arbitrary binary. A 0x0a sample byte is not
+                    // an SSE newline and must not create a tiny audio packet.
+                    let rawAudio = request.url?.host == "api.elevenlabs.io" && request.url?.path.hasPrefix("/v1/text-to-speech/") == true
                     var chunk = Data(); var count = 0
                     for try await byte in bytes {
                         try Task.checkCancellation(); chunk.append(byte); count += 1
                         guard count <= 12_000_000 else { throw BBError.limit }
-                        if chunk.count >= 2048 || byte == 10 { continuation.yield(chunk); chunk.removeAll(keepingCapacity: true) }
+                        if chunk.count >= 2048 || (!rawAudio && byte == 10) { continuation.yield(chunk); chunk.removeAll(keepingCapacity: true) }
                     }
                     if !chunk.isEmpty { continuation.yield(chunk) }
                     continuation.finish()

@@ -1,7 +1,44 @@
 # Black_Box implementation handoff
 
-Updated 2026-11-01. Source version **0.1.2 development**. Continue this repository;
+Updated 2026-11-01. Source version **0.1.3 development**. Continue this repository;
 do not restart from a proposal.
+
+## Native speech playback fix — 0.1.3 (verification in progress)
+
+The owner installed 0.1.2. ElevenLabs metadata now succeeds for the chosen voice
+and eleven_v4, but Test voice displays OSStatus -50 and no audio. The screenshot
+contains no live API key. Do not copy its private Voice ID into source/tests.
+
+The old controller set playback + spokenAudio + allowBluetoothA2DP before its
+first synthesis request. Playback already supports A2DP; remove the explicit
+recording-category option. Rebuild the engine graph only after session activation
+so stale microphone/Bluetooth formats are not retained. Cancel microphone capture
+before output. Local setup/activation/engine, provider request/stream, decoding
+and render failures now have distinct stage labels and native error codes.
+
+The generic HTTP reader also flushed raw PCM on every 0x0a byte. Audio is binary,
+so ElevenLabs now emits full 2048-byte packets (plus a final tail). A bounded
+8-buffer playback runway replaces one-buffer-at-a-time waiting; buffers remain
+24 kHz mono Float32 decoded from provider PCM16, and the mixer converts to the
+active output route. Stop/interruption releases waiters, rejects stale callbacks
+and permits a new graph on retry; stalled rendering has a 5-second deadline.
+
+Settings adds Test device audio (no API usage), using a local tone through the
+same PCM/session/player path, plus the actual output route. No alternate speech
+provider or silent fallback is added. The explicit Test voice remains the only
+setup control that can consume ElevenLabs synthesis quota.
+
+Added a hosted iOS Simulator XCTest target with nine native audio regressions:
+real session/engine/player completion, local tone, capture-to-playback, queued
+stop/retry, late request isolation, provider-vs-native failure, empty/truncated
+PCM, interruption recovery and odd/network/newline PCM boundaries. A legacy
+option probe records whether the simulator reproduces -50; it is not assumed
+identical to physical iOS. Existing 64 core tests are retained.
+
+Version 0.1.3/build 4 retains bundle ID, Keychain, SQLite and provider selections.
+Local plist/YAML/XML/Bash checks pass. Native build and iOS tests are pending;
+do not claim a compiled IPA or live-key playback until the corresponding result
+is observed. Continue from this checkpoint and update evidence below.
 
 ## ElevenLabs setup/speech fix — 0.1.2
 

@@ -53,3 +53,13 @@ The Linux SwiftPM test launcher intermittently crashes in this execution host wh
 - Packaging verifies arm64 Mach-O executable/platform metadata and emits a
   SHA-256 checksum. These checks do not prove installation or live RDC access.
 
+
+## Native audio repair — 0.1.3
+
+- Keep playback/recording ownership serial. Playback uses category playback,
+  mode spokenAudio, and no recording-only Bluetooth flags; A2DP routing is
+  intrinsic to playback. Activate the session before creating the output graph.
+- Treat ElevenLabs PCM as binary and bound scheduled playback, while preserving
+  stop/interruption/replacement generations. Label the failing native stage.
+- Add a local tone and native simulator tests to exercise the path that portable
+  metadata/request tests cannot cover. No hidden inference call or fallback.

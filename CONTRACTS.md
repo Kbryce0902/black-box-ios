@@ -89,3 +89,19 @@ A terminal result is one complete JSON line with `marker: BLACKBOX_HELPER_V1`, m
 - ElevenLabs error.detail object/string/list forms are bounded and redacted
   before display. HTTP stage/status/reason are retained without raw bodies/keys.
 
+
+# Native speech playback (0.1.3)
+
+- Cancel capture before output. Use playback/spokenAudio with no explicit A2DP
+  option; activate the session before rebuilding the player/mixer graph.
+- Provider audio remains signed PCM16 little-endian, 24 kHz mono. Newline bytes
+  never delimit audio packets. Convert to Float32 before AVAudioPlayerNode.
+- At most eight buffers of at most 1024 frames are queued. Completion waits for
+  dataPlayedBack; a stalled queue errors after five seconds. Stop/interruption
+  cancels queued work; old requests and callbacks cannot alter a newer playback.
+- Device-audio test is local and uses the identical output/decoder/player path.
+  It never sends a provider request. Test voice is explicit and may use quota.
+- Stage labels separate iPhone session/activation/engine/render failures from
+  provider request/stream/decoding errors. Keep provider redaction guarantees.
+- CI includes a hosted native iOS Simulator test target. Simulator playback is
+  evidence about that runtime, not proof of physical headset or live-key access.
