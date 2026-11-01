@@ -40,8 +40,11 @@ while redacting token/secret/code/verifier values.
 legacy coding, expiry, rejection, redaction, no retries, device-list formats and
 stale MCP reset. Two hosted native tests exercise actual Keychain storage and
 atomic grant persistence; nine existing audio tests are retained. Expected test
-counts: 81 core + 11 native. Local plist/YAML/XML/Bash checks pass. Mac compilation,
-tests and artifact retrieval remain pending. Version 0.1.4/build 5 preserves
+counts: 81 core + 11 native. Local plist/YAML/XML/Bash checks pass. Run 41330616249 passed all 81 core tests and compiled the device IPA. The new
+iOS storage test did not compile because OAuthTokens had no public initializer
+across the package boundary; that initializer is now explicit. No native storage
+execution was claimed for that attempt. A fresh full run and artifact retrieval
+remain pending. Version 0.1.4/build 5 preserves
 Gemini/ElevenLabs keys, voice settings, bundle ID and SQLite.
 
 References:
