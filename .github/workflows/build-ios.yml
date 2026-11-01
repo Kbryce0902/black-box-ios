@@ -1,0 +1,81 @@
+name: Build Black_Box for SideStore
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/build-ios.yml'
+      - 'BlackBox.xcodeproj/**'
+      - 'iOS/**'
+      - 'Sources/**'
+      - 'Tests/**'
+      - 'Scripts/**'
+      - 'Package.swift'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: blackbox-ios-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    # A private-repository run must not consume potentially billable Mac minutes.
+    # Publishing the dedicated repository requires the owner's authorization.
+    if: github.event.repository.private == false
+    runs-on: macos-15
+    timeout-minutes: 25
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.3.app/Contents/Developer
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Record actual build environment
+        run: |
+          set -euo pipefail
+          mkdir -p build/logs
+          {
+            sw_vers
+            xcodebuild -version
+            xcodebuild -showsdks
+            swift --version
+            git rev-parse HEAD
+          } 2>&1 | tee build/logs/environment.log
+
+      - name: Test the portable core on macOS
+        run: |
+          set -euo pipefail
+          swift test --jobs 2 2>&1 | tee build/logs/core-tests.log
+
+      - name: Compile and package the iPhone app
+        run: |
+          set -euo pipefail
+          bash Scripts/build-ios.sh unsigned 2>&1 | tee build/logs/device-build.log
+          python3 Scripts/verify-ipa.py build/BlackBox-0.1.0-unsigned.ipa | tee build/logs/ipa-verification.json
+
+      - name: Upload the verified IPA and checksum
+        uses: actions/upload-artifact@v4
+        with:
+          name: BlackBox-0.1.0-SideStore
+          path: |
+            build/BlackBox-0.1.0-unsigned.ipa
+            build/BlackBox-0.1.0-unsigned.ipa.sha256
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 0
+
+      - name: Preserve build diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: BlackBox-build-diagnostics
+          path: build/logs
+          if-no-files-found: ignore
+          retention-days: 1
