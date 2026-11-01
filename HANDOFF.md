@@ -43,8 +43,12 @@ atomic grant persistence; nine existing audio tests are retained. Expected test
 counts: 81 core + 11 native. Local plist/YAML/XML/Bash checks pass. Run 41330616249 passed all 81 core tests and compiled the device IPA. The new
 iOS storage test did not compile because OAuthTokens had no public initializer
 across the package boundary; that initializer is now explicit. No native storage
-execution was claimed for that attempt. A fresh full run and artifact retrieval
-remain pending. Version 0.1.4/build 5 preserves
+execution was claimed for that attempt. Run 41330953321 passed all 81 core tests, compiled the device app and passed all
+nine native audio tests, but both real Keychain tests failed in the unsigned
+simulator test host. The simulator harness now uses local ad-hoc signing (no
+Apple account/certificate); device IPA packaging remains unsigned. Keychain
+write/delete errors now include status codes for diagnosis. No failing test was
+skipped. A fresh full run and artifact retrieval remain pending. Version 0.1.4/build 5 preserves
 Gemini/ElevenLabs keys, voice settings, bundle ID and SQLite.
 
 References:

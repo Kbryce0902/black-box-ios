@@ -20,4 +20,4 @@ xcodebuild -project BlackBox.xcodeproj -scheme BlackBox -configuration Debug \
   -destination "platform=iOS Simulator,id=$simulator_id,arch=$simulator_arch" -destination-timeout 180 \
   -derivedDataPath build/AudioTestDerivedData -resultBundlePath build/logs/AudioPlayback.xcresult \
   -parallel-testing-enabled NO -only-testing:BlackBoxAudioTests \
-  ONLY_ACTIVE_ARCH=YES CODE_SIGNING_ALLOWED=NO test
+  ONLY_ACTIVE_ARCH=YES CODE_SIGNING_ALLOWED=YES CODE_SIGN_IDENTITY=- CODE_SIGN_STYLE=Manual test

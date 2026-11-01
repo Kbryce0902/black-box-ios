@@ -18,12 +18,13 @@ struct KeychainStore {
         if status == errSecItemNotFound {
             var insert = query; insert[kSecValueData as String] = value
             insert[kSecAttrAccessible as String] = kSecAttrAccessibleWhenUnlockedThisDeviceOnly
-            guard SecItemAdd(insert as CFDictionary, nil) == errSecSuccess else { throw BBError.setup("Keychain write failed.") }
+            let added = SecItemAdd(insert as CFDictionary, nil)
+            guard added == errSecSuccess else { throw BBError.setup("Keychain write failed (\(added)).") }
         } else if status != errSecSuccess { throw BBError.setup("Keychain update failed (\(status)).") }
     }
     func delete(_ account: String) throws {
         let status = SecItemDelete([kSecClass as String: kSecClassGenericPassword, kSecAttrService as String: service, kSecAttrAccount as String: account] as CFDictionary)
-        guard [errSecSuccess, errSecItemNotFound].contains(status) else { throw BBError.setup("Keychain deletion failed.") }
+        guard [errSecSuccess, errSecItemNotFound].contains(status) else { throw BBError.setup("Keychain deletion failed (\(status)).") }
     }
     func string(_ account: String) throws -> String { try get(account).flatMap { String(data: $0, encoding: .utf8) } ?? "" }
     func save<T: Encodable>(_ item: T, account: String) throws { try set(JSONEncoder().encode(item), account: account) }
