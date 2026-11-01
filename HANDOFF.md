@@ -11,8 +11,11 @@ and verified public, ID 1441611749, default branch main, initial commit
 permission. Source commit cccf2427232bf8394ff13535fc5f8f2e537a0aa8 was pushed.
 Mac run 41288013816 passed all 34 core tests on macOS 15.8.2, Xcode 26.3, Swift
 6.2.4. Native build stopped because the publication manifest omitted the existing
-BlackBox.xcodeproj directory. Add its project and shared scheme in the next
-commit, then repeat the Mac build. No IPA has completed yet. Earlier
+BlackBox.xcodeproj directory. Commit a6e1523ddd710c9f794367e081e2f9fdfd4b284e
+added that project and shared scheme. Run 41288221772 passed 34 tests and the
+actual native arm64 iphoneos Release build (**BUILD SUCCEEDED**). Packaging then
+failed on the argument order of lipo -verify_arch; place the input binary before
+the operation, and repeat the workflow. No IPA has completed yet. Earlier
 approval-pending notes below describe the previous checkpoint and are superseded
 by the user's authorization.
 

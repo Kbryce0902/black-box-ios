@@ -25,7 +25,7 @@ case "${1:-simulator}" in
     app_path='build/DerivedData/Build/Products/Release-iphoneos/BlackBox.app'
     test -x "$app_path/BlackBox"
     /usr/bin/file "$app_path/BlackBox"
-    /usr/bin/xcrun lipo -verify_arch arm64 "$app_path/BlackBox"
+    /usr/bin/xcrun lipo "$app_path/BlackBox" -verify_arch arm64
     /usr/bin/xcrun vtool -show-build "$app_path/BlackBox"
     staging="$(mktemp -d "$PWD/build/ipa.XXXXXX")"
     trap 'rm -rf "$staging"' EXIT
