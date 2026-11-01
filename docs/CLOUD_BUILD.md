@@ -15,7 +15,7 @@ AetherMedia repository is unrelated and must not be reused.
 
 The destination is the dedicated **public `Kbryce0902/black-box-ios` repository**
 containing only this BlackBox source tree. The source upload and native compilation succeeded in
-run 41291008404 at source commit 9cec8dcfbad11e0d402f0e566f91a9e9c5d440d3. No Gemini, ElevenLabs or RDC credentials are uploaded.
+run 41297291686 at source commit 93af30d7d00bf4abc4c6eb959ca92ec64494b636. No Gemini, ElevenLabs or RDC credentials are uploaded.
 
 The workflow refuses private-repository Mac jobs before allocating a runner,
 because private usage can exceed an included allowance and incur charges.
@@ -34,7 +34,7 @@ policy. Artifact retention is limited to one day; no paid service is enabled.
    errors and repeat until the run succeeds. Local Linux checks do not substitute
    for this compilation.
 4. Download the **BlackBox-SideStore** artifact and extract it. The contained
-   `BlackBox-0.1.1-unsigned.ipa` is a device build awaiting SideStore re-signing.
+   `BlackBox-0.1.2-unsigned.ipa` is a device build awaiting SideStore re-signing.
    The adjacent SHA-256 checksum identifies those exact bytes.
 5. Import the IPA into SideStore on the phone using the user's existing Apple
    Account setup. Record installation and launch results before calling it a
@@ -55,10 +55,10 @@ Official references:
 
 ## Retrieved artifact
 
-The successful native build and all 48 Mac tests passed. The downloaded
-`BlackBox-0.1.1-unsigned.ipa` is 818342 bytes; SHA-256:
+The successful native build and all 64 Mac tests passed. The downloaded
+`BlackBox-0.1.2-unsigned.ipa` is 852941 bytes; SHA-256:
 
-`22179321120c3ddfbce778c93d273c92103170e239caaef5c9f6fc086a5be55e`
+`e0a78a247b734ea59cd6b785b72a202e468a35cbe2d50cb87e1a743c709858cb`
 
 It targets arm64 iPhoneOS, minimum iOS 17.0. SideStore re-signing and actual phone
 installation/launch remain pending. The RDC native-client gate is unchanged.

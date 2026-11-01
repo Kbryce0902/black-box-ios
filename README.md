@@ -2,11 +2,11 @@
 
 Black_Box is implemented as one native SwiftUI app and a reusable Swift core. It calls Gemini, ElevenLabs and the existing RDC hosted MCP service directly. There is no custom backend, local language model or consumer-app dependency.
 
-**Status: compiled 0.1.1 development IPA for SideStore.** Xcode 26.3 built the arm64
-iphoneos Release target using the iOS 26.2 SDK; 48 Mac core tests passed.
-`BlackBox-0.1.1-unsigned.ipa` was retrieved and its checksum/structure verified.
+**Status: compiled 0.1.2 development IPA for SideStore.** Xcode 26.3 built the arm64
+iphoneos Release target using the iOS 26.2 SDK; 64 Mac core tests passed.
+`BlackBox-0.1.2-unsigned.ipa` was retrieved and its checksum/structure verified.
 SideStore must sign it for the phone. The owner reports 0.1.0 installed and runs;
-0.1.1 real-device acceptance, provider calls and
+0.1.2 real-device acceptance, provider calls and
 RDC desktop integration remain unverified. See [HANDOFF.md](HANDOFF.md) and
 [Verification/RESULTS.md](Verification/RESULTS.md).
 
@@ -20,9 +20,14 @@ RDC desktop integration remain unverified. See [HANDOFF.md](HANDOFF.md) and
 
 The [GitHub Actions build](docs/CLOUD_BUILD.md) runs in the dedicated public
 [black-box-ios repository](https://github.com/Kbryce0902/black-box-ios).
-The verified build is [run 41291008404](https://github.com/Kbryce0902/black-box-ios/actions/runs/41291008404).
+The verified build is [run 41297291686](https://github.com/Kbryce0902/black-box-ios/actions/runs/41297291686).
 
 ## Included implementation
+
+- 0.1.2 fixes ElevenLabs setup and speech: documented model IDs/display-name
+  normalization, returned TTS model picker, bounded metadata checks, redacted
+  provider error reasons and an explicit Test voice control. Voice/model edits
+  autosave. Restricted TTS-only keys can test speech independently of read access.
 
 - 0.1.1 fixes Gemini setup: Save and check key starts automatically, with progress,
   cancellation, a 25-second deadline, inline Google errors and a returned-model

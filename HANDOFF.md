@@ -22,7 +22,7 @@ Confirmed and corrected app defects:
 - HTTP and speech-stream errors now preserve bounded/redacted ElevenLabs
   status/message with a stage label. Missing endpoint permissions, invalid
   voice/model, quotas and verification errors are distinguished. JSON errors
-  are never decoded as PCM. An unsupported custom Accept header was removed;
+  are never decoded as PCM. A custom Accept header was removed;
   the documented pcm_24000 query controls raw audio output.
 - A cancellable 25-second metadata deadline and revision IDs reject stale
   replies after key/voice changes. Normalization feedback does not cancel a
@@ -34,12 +34,13 @@ Confirmed and corrected app defects:
   stream. It never auto-retries a potentially billed synthesis call.
 - Release 0.1.2, build 3; app, Keychain and SQLite identities are unchanged.
 
-Added 16 focused regressions (64 total expected), covering request construction,
-normalization, read-vs-speech permissions, metadata shapes/voice correlation,
-provider errors/redaction, retries, timeouts and late-response rejection.
-Local plist/YAML/shell checks PASS. The transient Linux Swift toolchain has
-expired; these changes still need the Mac core tests and native compile.
-The prior 0.1.1 evidence below is historical until 0.1.2 is verified.
+All **64 Mac core tests passed**, including 16 new ElevenLabs regressions for
+request construction, normalization, read-vs-speech permissions, metadata
+correlation, provider errors/redaction, retry, deadlines and stale responses.
+Native arm64 Release compilation, packaging and downloaded artifact integrity
+checks PASS in run 41297291686. Local plist/YAML/shell checks PASS; the expired
+Linux Swift toolchain was not reinstalled or reported as a new Linux test pass.
+Live private-key/voice acceptance still requires the owner's phone test.
 
 Official references checked 2026-11-01:
 https://elevenlabs.io/docs/api-reference/voices/get
@@ -87,35 +88,40 @@ https://ai.google.dev/api/models
 https://ai.google.dev/gemini-api/docs/models/gemini-3.8-flash
 https://ai.google.dev/gemini-api/docs/api-key
 
-The release evidence below identifies the delivered 0.1.1 update.
+Current release provenance is recorded below.
 
 ## Current outcome
 
-**A native arm64 iPhone IPA has been compiled and retrieved.**
+**Native 0.1.2 (build 3) has been compiled, retrieved and preserved for delivery.**
 
-- Repository: https://github.com/Kbryce0902/black-box-ios (public; explicitly
-  authorized by the owner). Only this project's files were uploaded.
-- Exact compiled source: `9cec8dcfbad11e0d402f0e566f91a9e9c5d440d3`.
-- Successful run: https://github.com/Kbryce0902/black-box-ios/actions/runs/41291008404
-  (job 124802084134, all workflow steps succeeded).
-- Environment: macOS 15.8.2 arm64, Xcode 26.3 (17C529), Apple Swift 6.2.4,
-  iOS 26.2 SDK, Release configuration, deployment floor iOS 17.0.
-- Core tests on that Mac: **48 passed, 0 failures**.
-- Artifact: `BlackBox-0.1.1-unsigned.ipa`, 818342 bytes, build 2,
-  bundle `com.kellen.blackbox`, physical `iphoneos` platform, arm64 executable.
-- IPA SHA-256: `22179321120c3ddfbce778c93d273c92103170e239caaef5c9f6fc086a5be55e`.
-- GitHub artifact ID 13077805119; outer ZIP digest
-  `b6b86dacd2891dbb6fdad3dd2fbefb538072a5988e49db59ae031ef466224ec5`.
-  The downloaded outer artifact and enclosed IPA both matched their checksums.
-  Structural verification also passed independently after download.
+- Repository: https://github.com/Kbryce0902/black-box-ios (owner-authorized public
+  repository containing only this project).
+- Exact compiled source: `93af30d7d00bf4abc4c6eb959ca92ec64494b636`.
+- Successful run: https://github.com/Kbryce0902/black-box-ios/actions/runs/41297291686
+  (job 124820695436; all workflow steps succeeded).
+- macOS 15.8.2 arm64, Xcode 26.3 (17C529), Apple Swift 6.2.4, iOS 26.2 SDK;
+  Release arm64 iphoneos, minimum iOS 17.0.
+- **64 tests passed, 0 failures** on that Mac.
+- `BlackBox-0.1.2-unsigned.ipa`: 852941 bytes, bundle com.kellen.blackbox.
+- IPA SHA-256: `e0a78a247b734ea59cd6b785b72a202e468a35cbe2d50cb87e1a743c709858cb`.
+- GitHub artifact 13079872553; outer ZIP SHA-256:
+  `6dc1992fcc6e8db5aab6e6f42f39e926fe91dbda68af39d5ff712dde4e22225e`.
+- Downloaded outer ZIP and enclosed IPA matched both digests. ZIP, plist,
+  executable permissions, arm64 Mach-O and physical iOS platform checks passed
+  independently after download.
 
-**Import this IPA into SideStore to sign and install it.** No Apple signing
-identity or profile was requested, embedded or uploaded. The owner reports that 0.1.0 installed and launches. Signing and phone acceptance
-of this 0.1.1 update, simulator execution, live provider inference and actual
-app-to-Windows actions remain unverified. Do not call this a finished assistant.
+Install this update over the existing app through SideStore. The owner reports a
+previous install/launch; this 0.1.2 update and live ElevenLabs playback are not yet
+phone-verified. Saved keys, bundle ID and SQLite location are unchanged. Version
+0.1.1 voice/model fields needed Save configuration; use it before updating if
+those entries have not been saved. Version 0.1.2 autosaves these fields.
 
-**The required RDC native authentication feasibility gate is still unresolved.**
-The existing confidential-client registration finding is unchanged below.
+No real provider key, private Voice ID, signing identity or voice material was
+uploaded to this repository. No paid provider inference, subscription change or
+account-permission change occurred here. Metadata success cannot establish TTS
+access, verification, billing or quota; Test voice is the explicit live check.
+
+**RDC's native public-client registration gate remains unresolved.**
 
 ## Compilation changes and checkpoints
 
@@ -129,7 +135,9 @@ The existing confidential-client registration finding is unchanged below.
    Run 41288398459 passed compilation, packaging, verification and upload.
 5. 0.1.1 commit `9cec8dcfbad11e0d402f0e566f91a9e9c5d440d3` fixes Gemini setup;
    run 41291008404 passed 48 tests, native compilation, packaging and artifact checks.
-6. Documentation updates after that commit do not alter the delivered binary.
+6. 0.1.2 commit `93af30d7d00bf4abc4c6eb959ca92ec64494b636` fixes ElevenLabs
+   setup and model IDs. Run 41297291686 passed 64 tests, native compilation and
+   verified packaging. Documentation-only updates do not alter that binary.
 
 The prepared workflow skips private-repository Mac jobs before allocation and
 retains artifacts for one day. No private runner minutes or paid-service/billing
@@ -152,7 +160,7 @@ Swift 5 language mode as configured. No warning was promoted to a device test.
 | 04 Voice | Replaceable TranscriptionProvider, Apple finalized captions, streamed ElevenLabs PCM, stop/replay/mute, independent cancellation, routing/interruption handlers | PCM tests and native parser pass. Actual permissions, audio and Bluetooth pending |
 | 05 Research/memory | Separate Google-grounded research tool, sources/support markers/rendered attribution, editable memories, per-device aliases | Citation/UTF-8 tests pass; actual grounding and UI attribution acceptance pending |
 | 06 Recovery | Transactional claims, no duplicate dispatch/replay, persisted unknown outcomes, saved-call reconciliation on resume, public-client refresh/revocation adapter and reported usage limits | Recovery/cancellation/duplicate/refresh fixtures pass. Native suspension/token/server-revocation tests pending |
-| 07 Release | Xcode configuration, actual-build-only unsigned packaging script, SideStore/PC startup instructions and acceptance checklist | Mac arm64 Release build, 48 tests, verified 0.1.1 unsigned IPA PASS; SideStore signing/install and real-device acceptance pending |
+| 07 Release | Xcode configuration, actual-build-only unsigned packaging script, SideStore/PC startup instructions and acceptance checklist | Mac arm64 Release build, 64 tests, verified 0.1.2 unsigned IPA PASS; SideStore signing/install and real-device acceptance pending |
 
 All modules use the same app, contracts and persistence. The first vertical slice passes only with deterministic fixtures: text → model tool → validation → persisted action → fixture RDC executor → correlated model response. Real YouTube launch is still pending Module 00. Voice is integrated behind that same execution boundary, not evidence that the live slice passed.
 
@@ -204,18 +212,14 @@ All modules use the same app, contracts and persistence. The first vertical slic
 2. User's ElevenLabs key and accessible authorized target voice ID. Voice creation/owner verification/sharing is separate; see docs/VOICE_SETUP.md. No sample material or target voice was created here.
 3. RDC-confirmed public native registration with token auth none, S256, exact callback, mcp:tools scope, advertised resource audience, refresh and supported grant-revocation route.
 4. Actual selected Windows PC/agent online after this app's own OAuth consent; helper path and per-device folder aliases; actual Windows, PowerShell, Node and RDC versions.
-5. User-side SideStore update to 0.1.1 and actual native permission/provider checks. Owner reports 0.1.0 install/launch; 0.1.1 Mac compilation is complete as recorded above.
+5. User-side SideStore update to 0.1.2 and native permission/provider checks. A previous install/launch is reported; 0.1.2 Mac compilation is complete.
 
 ## Next concrete step
 
-Install the 0.1.1 update over the existing app through SideStore, retaining its
-app identity. Open Settings to check the already saved Gemini key, or use Check
-connection to retry. Record the actual inline Google result without sharing the
-key. Record installation, launch and permission results in docs/ACCEPTANCE.md.
-Enter any missing Gemini/ElevenLabs keys
-only in native Settings and run the integrated provider harness. Resolve RDC's
-public native client registration with the provider; then verify independent
-OAuth, actual device/tool schemas and the helper before attempting the YouTube
-text slice over Wi-Fi and cellular. Keep the authentication gate closed until
-those checks succeed. No completed desktop action or voice quality is implied
-by successful compilation.
+Save any unsaved voice configuration in the existing app, then install 0.1.2
+through SideStore over it. Open Settings, run Check voice and model, select the
+intended returned model (Eleven v4 uses eleven_v4), then use Test voice. Check the
+actual inline ElevenLabs reason if access is refused; never paste the key into
+chat or source. Metadata read permissions and Text to Speech permission are
+separate. Record actual speech/phone acceptance in docs/ACCEPTANCE.md. Continue
+RDC public-native registration separately before claiming phone-to-PC control.

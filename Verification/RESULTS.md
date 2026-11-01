@@ -1,21 +1,25 @@
 # Verified results — 2026-11-01
 
-## Native IPA build — PASS
+## Native 0.1.2 IPA build — PASS
 
-- Source: `9cec8dcfbad11e0d402f0e566f91a9e9c5d440d3`.
-- Run: https://github.com/Kbryce0902/black-box-ios/actions/runs/41291008404
+- Source: `93af30d7d00bf4abc4c6eb959ca92ec64494b636`.
+- Run: https://github.com/Kbryce0902/black-box-ios/actions/runs/41297291686
 - macOS 15.8.2 arm64; Xcode 26.3 (17C529), Apple Swift 6.2.4, iOS 26.2 SDK.
-- **48 core tests passed, 0 failures** on Linux and macOS. The 14 new regressions
-  exercise the production Gemini validation controller, pagination, HTTP failures,
-  deadlines, retry and stale-response rejection.
-- **Native Release iphoneos build succeeded.** No Swift compiler errors.
-- Packaging and structural verification passed on the Mac and after download.
-- `BlackBox-0.1.1-unsigned.ipa`: 818342 bytes, build 2, arm64, minimum iOS 17.0.
-- SHA-256: `22179321120c3ddfbce778c93d273c92103170e239caaef5c9f6fc086a5be55e`.
-- Downloaded GitHub artifact ZIP digest and enclosed IPA checksum both matched.
-- The owner reports 0.1.0 installed and launches. 0.1.1 SideStore update acceptance,
-  simulator execution, actual phone/provider/cellular
-  and app-to-Windows integration remain NOT RUN. RDC registration remains BLOCKED.
+- **64 core tests passed, 0 failures**, including 16 new ElevenLabs regressions.
+  The earlier 48-test set passed on Linux/macOS for 0.1.1. The transient Linux
+  Swift installation expired; no new 0.1.2 Linux execution is claimed.
+- Native Release arm64 iphoneos build, packaging and structural checks PASS.
+- `BlackBox-0.1.2-unsigned.ipa`: 852941 bytes, build 3, minimum iOS 17.0.
+- SHA-256: `e0a78a247b734ea59cd6b785b72a202e468a35cbe2d50cb87e1a743c709858cb`.
+- Downloaded GitHub ZIP digest and enclosed IPA checksum both matched; local
+  structural verification passed again after download.
+- Existing Apple speech/Swift 6-mode compatibility warnings remain non-fatal.
+- No live ElevenLabs key/synthesis result was available here. The generic HTTP
+  400 in the owner's screenshot discarded its reason in the previous app;
+  normalization fixes the confirmed model-ID bug but does not prove the cause
+  of a metadata GET that never sent the model field.
+- Actual 0.1.2 phone playback, headset routes and provider account access remain
+  pending. RDC public-native registration is separately blocked.
 
 ## Initial local checks
 

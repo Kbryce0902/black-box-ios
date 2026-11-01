@@ -10,7 +10,10 @@ In Black_Box:
 
 1. Store your own ElevenLabs key in Settings. The input clears after storage; the key is retained in Keychain only.
 2. Enter the accessible voice ID and a supported text-to-speech model ID. The default is `eleven_flash_v2_5`, configurable without a source change.
-3. Use Validate voice access, then explicitly start the short playback test, which uses provider quota.
+3. Use Check voice and model, choose an available Speech models entry, then Test voice (uses API quota). Metadata access and actual synthesis are separate checks.
+   Eleven v4's API ID is `eleven_v4`; known display labels normalize automatically.
+   A restricted key needs read permission for metadata and Text to Speech for
+   playback; Test voice can run independently of a failed read-permission check.
 4. Listen over the phone speaker and your Bluetooth/headset route. Evaluate the exact voice, pronunciation and delivery before relying on it.
 
 The text persona is concise, confident and dry. Vocal identity comes from the selected authorized ElevenLabs voice, not a claim that the text prompt reproduces an actor's timbre.
@@ -20,3 +23,12 @@ Official sources checked 2026-11-01:
 - https://elevenlabs.io/docs/help-center/product/voices/voice-cloning/can-i-create-a-professional-voice-clone-of-someone-elses-voice
 - https://elevenlabs.io/docs/help-center/product/voices/my-voices/how-do-i-share-a-voice
 - https://elevenlabs.io/docs/api-reference/text-to-speech/stream
+
+The 0.1.2 update preserves ElevenLabs status/message details (including missing
+permissions, unknown voice/model, quota or verification requirements), with
+credentials redacted. A generic HTTP 400 alone cannot establish its cause.
+
+Additional official references:
+- https://elevenlabs.io/docs/api-reference/models/list
+- https://elevenlabs.io/docs/api-reference/voices/get
+- https://elevenlabs.io/docs/help-center/product/core-capabilities/text-to-speech/how-do-audio-tags-work-with-eleven-v3-and-v4

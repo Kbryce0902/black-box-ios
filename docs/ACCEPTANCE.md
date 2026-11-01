@@ -4,14 +4,15 @@ Statuses below distinguish completed compilation from pending real-device checks
 
 | Check | Required observation | Status |
 |---|---|---|
-| Native device build | Release arm64 iphoneos compile; compiler/SDK versions recorded | PASS — Xcode 26.3, Swift 6.2.4, iOS SDK 26.2, run 41291008404 |
+| Native device build | Release arm64 iphoneos compile; compiler/SDK versions recorded | PASS — Xcode 26.3, Swift 6.2.4, iOS SDK 26.2, run 41297291686 |
 | Simulator | Simulator compile and execution | PENDING |
-| IPA packaging | Physical iOS Mach-O, ZIP integrity and exact downloaded checksums | PASS — 0.1.1, 818342 bytes; SHA-256 in HANDOFF.md |
+| IPA packaging | Physical iOS Mach-O, ZIP integrity and exact downloaded checksums | PASS — 0.1.2, 852941 bytes; SHA-256 in HANDOFF.md |
 | Phone identity | Runtime hw.machine and OS/build; actual target confirmed | PENDING |
-| SideStore | Re-signed install, launch and refresh on actual OS | 0.1.0 install and launch reported by owner; refresh and 0.1.1 acceptance pending |
+| SideStore | Re-signed install, launch and refresh on actual OS | 0.1.0 install and launch reported by owner; refresh and 0.1.2 acceptance pending |
 | Gemini setup feedback | Save starts checking; errors/deadline replace progress; returned model can be selected | 48 tests PASS on Linux and macOS including 14 Gemini regressions; real-key verification pending |
 | Gemini direct | Native API response with user's key and selected model | PENDING |
-| ElevenLabs | Audible streamed reply using configured authorized voice ID | PENDING |
+| ElevenLabs | Audible streamed reply using configured authorized voice ID | 64 Mac tests include 16 ElevenLabs regressions; live key/playback pending |
+| ElevenLabs setup | Canonical model, voice correlation, redacted errors, deadline and independent TTS test | Fixture and native compile PASS; owner's real check pending |
 | RDC registration | Public native registration, no secret, exact callback | BLOCKED by tested DCR result |
 | RDC callback | Independent system-browser PKCE/state validation and code exchange | PENDING |
 | Refresh | Expired access token refresh, rotation preserved, concurrent refresh serialized | PENDING |
