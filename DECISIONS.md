@@ -33,8 +33,8 @@ The Linux SwiftPM test launcher intermittently crashes in this execution host wh
   state after key replacement/deletion or a deadline.
 
 - The owner authorized the dedicated public GitHub repository on 2026-11-01.
-  `Kbryce0902/black-box-ios` is created and verified. Source upload and the Mac
-  build succeeded; exact source/run/digest are recorded in HANDOFF.md.
+  `Kbryce0902/black-box-ios` is created and verified. Source upload and the 0.1.1 Mac
+  build succeeded with 48 tests; exact source/run/digest are in HANDOFF.md.
 - Do not reuse AetherMedia or coursework repositories for this app.
 - The prepared workflow uses a standard macos-15 runner and Xcode 26.3, runs
   core tests, builds the actual iphoneos target, then validates and uploads the

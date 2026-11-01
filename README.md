@@ -2,10 +2,11 @@
 
 Black_Box is implemented as one native SwiftUI app and a reusable Swift core. It calls Gemini, ElevenLabs and the existing RDC hosted MCP service directly. There is no custom backend, local language model or consumer-app dependency.
 
-**Status: compiled development IPA for SideStore.** Xcode 26.3 built the arm64
-iphoneos Release target using the iOS 26.2 SDK; 34 Mac core tests passed.
-`BlackBox-0.1.0-unsigned.ipa` was retrieved and its checksum/structure verified.
-SideStore must sign it for the phone. Real-device installation, provider calls and
+**Status: compiled 0.1.1 development IPA for SideStore.** Xcode 26.3 built the arm64
+iphoneos Release target using the iOS 26.2 SDK; 48 Mac core tests passed.
+`BlackBox-0.1.1-unsigned.ipa` was retrieved and its checksum/structure verified.
+SideStore must sign it for the phone. The owner reports 0.1.0 installed and runs;
+0.1.1 real-device acceptance, provider calls and
 RDC desktop integration remain unverified. See [HANDOFF.md](HANDOFF.md) and
 [Verification/RESULTS.md](Verification/RESULTS.md).
 
@@ -19,9 +20,14 @@ RDC desktop integration remain unverified. See [HANDOFF.md](HANDOFF.md) and
 
 The [GitHub Actions build](docs/CLOUD_BUILD.md) runs in the dedicated public
 [black-box-ios repository](https://github.com/Kbryce0902/black-box-ios).
-The verified build is [run 41288398459](https://github.com/Kbryce0902/black-box-ios/actions/runs/41288398459).
+The verified build is [run 41291008404](https://github.com/Kbryce0902/black-box-ios/actions/runs/41291008404).
 
 ## Included implementation
+
+- 0.1.1 fixes Gemini setup: Save and check key starts automatically, with progress,
+  cancellation, a 25-second deadline, inline Google errors and a returned-model
+  picker. Settings checks an already saved key. Keys and history retain their
+  existing storage identity; metadata success does not claim inference success.
 
 - Conversation, Computer, Activity and Settings tabs; native dark styling, blue accents and a featureless cube app icon.
 - SQLite history, task/action journaling, editable memories and device-specific folder aliases; Keychain credentials on iOS.

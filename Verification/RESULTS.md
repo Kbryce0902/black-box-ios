@@ -2,16 +2,19 @@
 
 ## Native IPA build — PASS
 
-- Source: `dbec5b93dd1d20e209462f5c7076871c1970cb34`.
-- Run: https://github.com/Kbryce0902/black-box-ios/actions/runs/41288398459
+- Source: `9cec8dcfbad11e0d402f0e566f91a9e9c5d440d3`.
+- Run: https://github.com/Kbryce0902/black-box-ios/actions/runs/41291008404
 - macOS 15.8.2 arm64; Xcode 26.3 (17C529), Apple Swift 6.2.4, iOS 26.2 SDK.
-- **34 core tests passed, 0 failures.**
+- **48 core tests passed, 0 failures** on Linux and macOS. The 14 new regressions
+  exercise the production Gemini validation controller, pagination, HTTP failures,
+  deadlines, retry and stale-response rejection.
 - **Native Release iphoneos build succeeded.** No Swift compiler errors.
 - Packaging and structural verification passed on the Mac and after download.
-- `BlackBox-0.1.0-unsigned.ipa`: 783221 bytes, arm64, minimum iOS 17.0.
-- SHA-256: `3376bb2827ea7ff468d303b11f5d1a8abec109a572d3a2222c0371ab7c71505c`.
+- `BlackBox-0.1.1-unsigned.ipa`: 818342 bytes, build 2, arm64, minimum iOS 17.0.
+- SHA-256: `22179321120c3ddfbce778c93d273c92103170e239caaef5c9f6fc086a5be55e`.
 - Downloaded GitHub artifact ZIP digest and enclosed IPA checksum both matched.
-- SideStore signing/install, simulator execution, actual phone/provider/cellular
+- The owner reports 0.1.0 installed and launches. 0.1.1 SideStore update acceptance,
+  simulator execution, actual phone/provider/cellular
   and app-to-Windows integration remain NOT RUN. RDC registration remains BLOCKED.
 
 ## Initial local checks

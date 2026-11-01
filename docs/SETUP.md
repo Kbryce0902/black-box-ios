@@ -33,7 +33,7 @@ To build an unsigned device artifact for SideStore:
 Scripts/build-ios.sh unsigned
 ```
 
-Only after `xcodebuild` successfully produces a real `iphoneos` app does the script package `build/BlackBox-0.1.0-unsigned.ipa`. It is unsigned and must be re-signed; it is not an App Store archive or a claim of successful installation. The script exits explicitly on Linux and never fabricates an IPA.
+Only after `xcodebuild` successfully produces a real `iphoneos` app does the script package `build/BlackBox-0.1.1-unsigned.ipa`. It is unsigned and must be re-signed; it is not an App Store archive or a claim of successful installation. The script exits explicitly on Linux and never fabricates an IPA.
 
 For a direct Xcode install, choose your signing team and a bundle ID provisioned for that account. No development team, signing certificate or provisioning profile is supplied. Keep the callback URL scheme `com.kellen.blackbox` registered even if re-signing changes the app bundle identifier.
 

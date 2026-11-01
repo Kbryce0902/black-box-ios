@@ -34,17 +34,16 @@ Implemented in the same app:
 Checks: portable core build PASS; **48 tests passed, 0 failures** on Linux.
 The 14 new regressions cover catalogs/pagination, bad keys/permissions/quota,
 offline status, deadline, retry, replacement/deletion races, model changes and
-key redaction. Native syntax and shell/YAML/version checks PASS. Native Mac
-compilation of 0.1.1 is the next step. No user API key or live Google success was
-available here; do not substitute fixture results for that proof.
+key redaction. Native syntax and shell/YAML/version checks PASS. Native Mac compilation and packaging of 0.1.1 PASS in run 41291008404; all 48
+tests passed on that Mac too. No user API key or live Google success was available
+here; do not substitute fixture results for that proof.
 
 Official references checked 2026-11-01:
 https://ai.google.dev/api/models
 https://ai.google.dev/gemini-api/docs/models/gemini-3.8-flash
 https://ai.google.dev/gemini-api/docs/api-key
 
-The release evidence below is the earlier 0.1.0 build until the 0.1.1 Mac run is
-completed and recorded.
+The release evidence below identifies the delivered 0.1.1 update.
 
 ## Current outcome
 
@@ -52,23 +51,23 @@ completed and recorded.
 
 - Repository: https://github.com/Kbryce0902/black-box-ios (public; explicitly
   authorized by the owner). Only this project's files were uploaded.
-- Exact compiled source: `dbec5b93dd1d20e209462f5c7076871c1970cb34`.
-- Successful run: https://github.com/Kbryce0902/black-box-ios/actions/runs/41288398459
-  (job 124794338839, all workflow steps succeeded).
+- Exact compiled source: `9cec8dcfbad11e0d402f0e566f91a9e9c5d440d3`.
+- Successful run: https://github.com/Kbryce0902/black-box-ios/actions/runs/41291008404
+  (job 124802084134, all workflow steps succeeded).
 - Environment: macOS 15.8.2 arm64, Xcode 26.3 (17C529), Apple Swift 6.2.4,
   iOS 26.2 SDK, Release configuration, deployment floor iOS 17.0.
-- Core tests on that Mac: **34 passed, 0 failures**.
-- Artifact: `BlackBox-0.1.0-unsigned.ipa`, 783221 bytes,
+- Core tests on that Mac: **48 passed, 0 failures**.
+- Artifact: `BlackBox-0.1.1-unsigned.ipa`, 818342 bytes, build 2,
   bundle `com.kellen.blackbox`, physical `iphoneos` platform, arm64 executable.
-- IPA SHA-256: `3376bb2827ea7ff468d303b11f5d1a8abec109a572d3a2222c0371ab7c71505c`.
-- GitHub artifact ID 13076082585; outer ZIP digest
-  `e4f67885d772d62ce49f1466120c02d644b02f395c6487be24d32ecd23cbe9d4`.
+- IPA SHA-256: `22179321120c3ddfbce778c93d273c92103170e239caaef5c9f6fc086a5be55e`.
+- GitHub artifact ID 13077805119; outer ZIP digest
+  `b6b86dacd2891dbb6fdad3dd2fbefb538072a5988e49db59ae031ef466224ec5`.
   The downloaded outer artifact and enclosed IPA both matched their checksums.
   Structural verification also passed independently after download.
 
 **Import this IPA into SideStore to sign and install it.** No Apple signing
-identity or profile was requested, embedded or uploaded. Signing, actual phone
-installation/launch, simulator execution, paid provider inference and live
+identity or profile was requested, embedded or uploaded. The owner reports that 0.1.0 installed and launches. Signing and phone acceptance
+of this 0.1.1 update, simulator execution, live provider inference and actual
 app-to-Windows actions remain unverified. Do not call this a finished assistant.
 
 **The required RDC native authentication feasibility gate is still unresolved.**
@@ -84,7 +83,9 @@ The existing confidential-client registration finding is unchanged below.
    because lipo -verify_arch was passed the input in the wrong position.
 4. Commit `dbec5b93dd1d20e209462f5c7076871c1970cb34` corrected the argument order.
    Run 41288398459 passed compilation, packaging, verification and upload.
-5. Source/header documentation updates after that commit do not alter the binary.
+5. 0.1.1 commit `9cec8dcfbad11e0d402f0e566f91a9e9c5d440d3` fixes Gemini setup;
+   run 41291008404 passed 48 tests, native compilation, packaging and artifact checks.
+6. Documentation updates after that commit do not alter the delivered binary.
 
 The prepared workflow skips private-repository Mac jobs before allocation and
 retains artifacts for one day. No private runner minutes or paid-service/billing
@@ -107,7 +108,7 @@ Swift 5 language mode as configured. No warning was promoted to a device test.
 | 04 Voice | Replaceable TranscriptionProvider, Apple finalized captions, streamed ElevenLabs PCM, stop/replay/mute, independent cancellation, routing/interruption handlers | PCM tests and native parser pass. Actual permissions, audio and Bluetooth pending |
 | 05 Research/memory | Separate Google-grounded research tool, sources/support markers/rendered attribution, editable memories, per-device aliases | Citation/UTF-8 tests pass; actual grounding and UI attribution acceptance pending |
 | 06 Recovery | Transactional claims, no duplicate dispatch/replay, persisted unknown outcomes, saved-call reconciliation on resume, public-client refresh/revocation adapter and reported usage limits | Recovery/cancellation/duplicate/refresh fixtures pass. Native suspension/token/server-revocation tests pending |
-| 07 Release | Xcode configuration, actual-build-only unsigned packaging script, SideStore/PC startup instructions and acceptance checklist | Mac arm64 Release build, 34 tests, verified unsigned IPA PASS; SideStore signing/install and real-device acceptance pending |
+| 07 Release | Xcode configuration, actual-build-only unsigned packaging script, SideStore/PC startup instructions and acceptance checklist | Mac arm64 Release build, 48 tests, verified 0.1.1 unsigned IPA PASS; SideStore signing/install and real-device acceptance pending |
 
 All modules use the same app, contracts and persistence. The first vertical slice passes only with deterministic fixtures: text → model tool → validation → persisted action → fixture RDC executor → correlated model response. Real YouTube launch is still pending Module 00. Voice is integrated behind that same execution boundary, not evidence that the live slice passed.
 
@@ -159,12 +160,15 @@ All modules use the same app, contracts and persistence. The first vertical slic
 2. User's ElevenLabs key and accessible authorized target voice ID. Voice creation/owner verification/sharing is separate; see docs/VOICE_SETUP.md. No sample material or target voice was created here.
 3. RDC-confirmed public native registration with token auth none, S256, exact callback, mcp:tools scope, advertised resource audience, refresh and supported grant-revocation route.
 4. Actual selected Windows PC/agent online after this app's own OAuth consent; helper path and per-device folder aliases; actual Windows, PowerShell, Node and RDC versions.
-5. User-side SideStore re-signing/install, actual iPhone runtime and permissions. Mac compilation is complete as recorded above.
+5. User-side SideStore update to 0.1.1 and actual native permission/provider checks. Owner reports 0.1.0 install/launch; 0.1.1 Mac compilation is complete as recorded above.
 
 ## Next concrete step
 
-Import the delivered IPA into SideStore and record installation, launch and
-permission results in docs/ACCEPTANCE.md. Enter the user's Gemini/ElevenLabs keys
+Install the 0.1.1 update over the existing app through SideStore, retaining its
+app identity. Open Settings to check the already saved Gemini key, or use Check
+connection to retry. Record the actual inline Google result without sharing the
+key. Record installation, launch and permission results in docs/ACCEPTANCE.md.
+Enter any missing Gemini/ElevenLabs keys
 only in native Settings and run the integrated provider harness. Resolve RDC's
 public native client registration with the provider; then verify independent
 OAuth, actual device/tool schemas and the helper before attempting the YouTube

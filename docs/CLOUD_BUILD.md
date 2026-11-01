@@ -15,7 +15,7 @@ AetherMedia repository is unrelated and must not be reused.
 
 The destination is the dedicated **public `Kbryce0902/black-box-ios` repository**
 containing only this BlackBox source tree. The source upload and native compilation succeeded in
-run 41288398459 at source commit dbec5b93dd1d20e209462f5c7076871c1970cb34. No Gemini, ElevenLabs or RDC credentials are uploaded.
+run 41291008404 at source commit 9cec8dcfbad11e0d402f0e566f91a9e9c5d440d3. No Gemini, ElevenLabs or RDC credentials are uploaded.
 
 The workflow refuses private-repository Mac jobs before allocating a runner,
 because private usage can exceed an included allowance and incur charges.
@@ -33,8 +33,8 @@ policy. Artifact retention is limited to one day; no paid service is enabled.
 3. Check the actual `core-tests` and `device-build` logs. Fix real Apple compiler
    errors and repeat until the run succeeds. Local Linux checks do not substitute
    for this compilation.
-4. Download the **BlackBox-0.1.0-SideStore** artifact and extract it. The contained
-   `BlackBox-0.1.0-unsigned.ipa` is a device build awaiting SideStore re-signing.
+4. Download the **BlackBox-SideStore** artifact and extract it. The contained
+   `BlackBox-0.1.1-unsigned.ipa` is a device build awaiting SideStore re-signing.
    The adjacent SHA-256 checksum identifies those exact bytes.
 5. Import the IPA into SideStore on the phone using the user's existing Apple
    Account setup. Record installation and launch results before calling it a
@@ -55,10 +55,10 @@ Official references:
 
 ## Retrieved artifact
 
-The successful native build and all 34 Mac tests passed. The downloaded
-`BlackBox-0.1.0-unsigned.ipa` is 783221 bytes; SHA-256:
+The successful native build and all 48 Mac tests passed. The downloaded
+`BlackBox-0.1.1-unsigned.ipa` is 818342 bytes; SHA-256:
 
-`3376bb2827ea7ff468d303b11f5d1a8abec109a572d3a2222c0371ab7c71505c`
+`22179321120c3ddfbce778c93d273c92103170e239caaef5c9f6fc086a5be55e`
 
 It targets arm64 iPhoneOS, minimum iOS 17.0. SideStore re-signing and actual phone
 installation/launch remain pending. The RDC native-client gate is unchanged.
