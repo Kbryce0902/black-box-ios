@@ -36,7 +36,12 @@ option probe records whether the simulator reproduces -50; it is not assumed
 identical to physical iOS. Existing 64 core tests are retained.
 
 Version 0.1.3/build 4 retains bundle ID, Keychain, SQLite and provider selections.
-Local plist/YAML/XML/Bash checks pass. Native build and iOS tests are pending;
+Local plist/YAML/XML/Bash checks pass. Run 41316725723 passed all 64 core tests
+and native arm64 packaging. Its simulator build attempted x86_64 for the app
+while SwiftPM supplied arm64, then failed to import BlackBoxCore. The simulator
+script now selects the host architecture explicitly and sets ONLY_ACTIVE_ARCH.
+A fresh full run is required; no simulator test execution was claimed for that
+failed attempt. Native build and iOS tests for the final source are pending;
 do not claim a compiled IPA or live-key playback until the corresponding result
 is observed. Continue from this checkpoint and update evidence below.
 

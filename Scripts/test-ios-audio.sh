@@ -15,8 +15,9 @@ print(sorted(phones, reverse=True)[0][2])
 PY
 )"
 echo "Running native audio tests on simulator $simulator_id"
+simulator_arch="$(uname -m)"
 xcodebuild -project BlackBox.xcodeproj -scheme BlackBox -configuration Debug \
-  -destination "platform=iOS Simulator,id=$simulator_id" -destination-timeout 180 \
+  -destination "platform=iOS Simulator,id=$simulator_id,arch=$simulator_arch" -destination-timeout 180 \
   -derivedDataPath build/AudioTestDerivedData -resultBundlePath build/logs/AudioPlayback.xcresult \
   -parallel-testing-enabled NO -only-testing:BlackBoxAudioTests \
-  CODE_SIGNING_ALLOWED=NO test
+  ONLY_ACTIVE_ARCH=YES CODE_SIGNING_ALLOWED=NO test
