@@ -1,21 +1,20 @@
 # Verified results — 2026-11-01
 
-## IPA compilation follow-up
+## Native IPA build — PASS
 
-- Current host: Linux, no xcodebuild. The updated `build-ios.sh unsigned` exits
-  with the expected code 2; no native compilation or IPA occurred.
-- Bash syntax, Python compilation and GitHub workflow YAML/configuration checks:
-  PASS. The workflow's public-repository job guard is present before allocation.
-- IPA structural checker: one synthetic arm64-device structure accepted and six
-  invalid archives rejected (simulator plist, simulator binary, missing execute
-  mode, missing app payload, truncated load commands and the actual source ZIP).
-  These are packaging fixtures, not a compiled or installable app.
-- A targeted credential scan flags the deliberate `fixture` private-key-header
-  redaction test. That is test data; no real private key is stored there.
-- No Black_Box repository is visible to the connected GitHub account. The sole
-  connected RDC device is Windows/PowerShell 5.1, with no gh or xcodebuild on PATH.
-- GitHub Mac execution, Apple-framework compilation, signing, SideStore install
-  and live RDC access all remain NOT RUN. See `docs/CLOUD_BUILD.md`.
+- Source: `dbec5b93dd1d20e209462f5c7076871c1970cb34`.
+- Run: https://github.com/Kbryce0902/black-box-ios/actions/runs/41288398459
+- macOS 15.8.2 arm64; Xcode 26.3 (17C529), Apple Swift 6.2.4, iOS 26.2 SDK.
+- **34 core tests passed, 0 failures.**
+- **Native Release iphoneos build succeeded.** No Swift compiler errors.
+- Packaging and structural verification passed on the Mac and after download.
+- `BlackBox-0.1.0-unsigned.ipa`: 783221 bytes, arm64, minimum iOS 17.0.
+- SHA-256: `3376bb2827ea7ff468d303b11f5d1a8abec109a572d3a2222c0371ab7c71505c`.
+- Downloaded GitHub artifact ZIP digest and enclosed IPA checksum both matched.
+- SideStore signing/install, simulator execution, actual phone/provider/cellular
+  and app-to-Windows integration remain NOT RUN. RDC registration remains BLOCKED.
+
+## Initial local checks
 
 | Check | Environment | Actual result |
 |---|---|---|
@@ -43,4 +42,4 @@ The simulated YouTube slice observes an action record before executor dispatch a
 
 The initial default parallel Swift build and SwiftPM test launcher intermittently terminated with an illegal instruction while the execution environment monitored /proc. A serial `swift build --build-tests --jobs 1 -Xswiftc -disable-batch-mode` completed, followed by direct execution of the built XCTest binary in a separate shell invocation. The final successful output is retained; the failed launcher output is under attempts/. This workaround does not validate an iOS runtime.
 
-The temporary Linux toolchain and locally extracted development headers/libraries are not included in the source ZIP. Standard Mac/Xcode environments can run `swift test --jobs 1` directly. No service subscription, real API inference or repository publication was performed.
+The temporary Linux toolchain and locally extracted development headers/libraries are not included in the source ZIP. Standard Mac/Xcode environments can run `swift test --jobs 1` directly. No service subscription or real API inference was performed. The separate public repository was subsequently created with owner authorization and used for the successful Mac compilation above.

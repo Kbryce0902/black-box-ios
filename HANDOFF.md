@@ -1,67 +1,57 @@
 # Black_Box implementation handoff
 
-Updated 2026-11-01. Source version **0.1.0 development**. Continue this source tree; do not restart from a proposal.
-
-## Compilation request follow-up — 2026-11-01
-
-**Current checkpoint:** The user explicitly authorized creation/publication of
-the separate repository. https://github.com/Kbryce0902/black-box-ios was created
-and verified public, ID 1441611749, default branch main, initial commit
-1131036952ae44498213e73114f177f83ded691d. The GitHub connector confirms push
-permission. Source commit cccf2427232bf8394ff13535fc5f8f2e537a0aa8 was pushed.
-Mac run 41288013816 passed all 34 core tests on macOS 15.8.2, Xcode 26.3, Swift
-6.2.4. Native build stopped because the publication manifest omitted the existing
-BlackBox.xcodeproj directory. Commit a6e1523ddd710c9f794367e081e2f9fdfd4b284e
-added that project and shared scheme. Run 41288221772 passed 34 tests and the
-actual native arm64 iphoneos Release build (**BUILD SUCCEEDED**). Packaging then
-failed on the argument order of lipo -verify_arch; place the input binary before
-the operation, and repeat the workflow. No IPA has completed yet. Earlier
-approval-pending notes below describe the previous checkpoint and are superseded
-by the user's authorization.
-
-The user requested an installable IPA. The existing source and its Library bundle
-were found in the same workspace; no fresh implementation or materialization was
-needed. This host is Linux and has no xcodebuild. The connected RDC device is a
-Windows/PowerShell 5.1 desktop with Git and no gh/xcodebuild on PATH. At the earlier
-checkpoint, the connected GitHub account had no accessible Black_Box repository.
-
-Prepared in this same app:
-- `.github/workflows/build-ios.yml`: standard macos-15/Xcode 26.3, core tests,
-  actual unsigned iphoneos compilation and one-day IPA/log artifacts.
-- The job skips private repositories before allocating a Mac runner. No private
-  minutes, paid service or billing-setting change was authorized or used.
-- `Scripts/build-ios.sh`: actual arm64 check, temporary atomic packaging,
-  structural verification and SHA-256 checksum.
-- `Scripts/verify-ipa.py`: ZIP, plist, execute-bit, arm64 Mach-O and physical iOS
-  platform validation. It cannot establish signing or real-device compatibility.
-- `.gitignore` and `docs/CLOUD_BUILD.md`: isolated publication/build procedure.
-
-Follow-up checks passed: Bash/Python syntax, YAML configuration/permissions and
-private-runner guard; the structural checker accepted one synthetic device
-structure and rejected six invalid/source archives. Linux correctly blocks the
-actual build with exit 2. The targeted credential scan's sole header match was
-the intentional `fixture` redaction test, not an embedded private key. Earlier
-34 core tests are retained; unchanged application code was not needlessly retested.
-
-**No native compile or IPA has been produced. No repository has been published.**
-The user's original requirement explicitly withholds public publication without
-authorization. The concrete proposed route is a separate public
-`Kbryce0902/black-box-ios` containing only this project's source. Existing public
-AetherMedia source must remain unrelated. The owner must approve this publication
-and make the repository available to the connected GitHub integration. No
-create-repository capability or authenticated local gh installation was found.
-
-Next step after that repository is available: upload the prepared tree with
-`.github` at repository root, run the Mac build, fix actual Apple compiler errors,
-retrieve and preserve the exact resulting IPA, then have SideStore re-sign it and
-record real installation/launch outcomes. The RDC native-client gate remains
-separate and unresolved. See `docs/CLOUD_BUILD.md` for the concrete procedure.
+Updated 2026-11-01. Source version **0.1.0 development**. Continue this repository;
+do not restart from a proposal.
 
 ## Current outcome
 
-One native SwiftUI application, one local Swift package, a checked-in Xcode project/shared scheme, Windows helpers, focused tests and setup/release scripts are implemented. The portable core builds and **34 fixture tests pass**. Native Swift/project/script syntax checks pass. No signed or unsigned IPA, Xcode build, simulator run, real phone run, live paid provider call or Windows action has been verified.
+**A native arm64 iPhone IPA has been compiled and retrieved.**
 
-**The required RDC feasibility gate is not passed.** Do not describe this as a proven phone-to-PC assistant or a finished release.
+- Repository: https://github.com/Kbryce0902/black-box-ios (public; explicitly
+  authorized by the owner). Only this project's files were uploaded.
+- Exact compiled source: `dbec5b93dd1d20e209462f5c7076871c1970cb34`.
+- Successful run: https://github.com/Kbryce0902/black-box-ios/actions/runs/41288398459
+  (job 124794338839, all workflow steps succeeded).
+- Environment: macOS 15.8.2 arm64, Xcode 26.3 (17C529), Apple Swift 6.2.4,
+  iOS 26.2 SDK, Release configuration, deployment floor iOS 17.0.
+- Core tests on that Mac: **34 passed, 0 failures**.
+- Artifact: `BlackBox-0.1.0-unsigned.ipa`, 783221 bytes,
+  bundle `com.kellen.blackbox`, physical `iphoneos` platform, arm64 executable.
+- IPA SHA-256: `3376bb2827ea7ff468d303b11f5d1a8abec109a572d3a2222c0371ab7c71505c`.
+- GitHub artifact ID 13076082585; outer ZIP digest
+  `e4f67885d772d62ce49f1466120c02d644b02f395c6487be24d32ecd23cbe9d4`.
+  The downloaded outer artifact and enclosed IPA both matched their checksums.
+  Structural verification also passed independently after download.
+
+**Import this IPA into SideStore to sign and install it.** No Apple signing
+identity or profile was requested, embedded or uploaded. Signing, actual phone
+installation/launch, simulator execution, paid provider inference and live
+app-to-Windows actions remain unverified. Do not call this a finished assistant.
+
+**The required RDC native authentication feasibility gate is still unresolved.**
+The existing confidential-client registration finding is unchanged below.
+
+## Compilation changes and checkpoints
+
+1. Created the dedicated public repository after explicit owner authorization.
+2. Run 41288013816 passed 34 tests but could not find the Xcode project because
+   the upload manifest omitted that existing directory. Commit
+   `a6e1523ddd710c9f794367e081e2f9fdfd4b284e` added the project and shared scheme.
+3. Run 41288221772 compiled the native app successfully but packaging failed
+   because lipo -verify_arch was passed the input in the wrong position.
+4. Commit `dbec5b93dd1d20e209462f5c7076871c1970cb34` corrected the argument order.
+   Run 41288398459 passed compilation, packaging, verification and upload.
+5. Source/header documentation updates after that commit do not alter the binary.
+
+The prepared workflow skips private-repository Mac jobs before allocation and
+retains artifacts for one day. No private runner minutes or paid-service/billing
+settings were enabled. The standalone IPA was saved for delivery because GitHub
+artifacts expire. Source is now maintained in this repository.
+
+Known non-fatal compiler warnings: older Apple microphone/Bluetooth spellings,
+a weak-self capture warning under future Swift 6 language mode, and skipped
+AppIntents metadata because the app does not use AppIntents. Compilation used
+Swift 5 language mode as configured. No warning was promoted to a device test.
 
 ## Module checkpoints
 
@@ -74,7 +64,7 @@ One native SwiftUI application, one local Swift package, a checked-in Xcode proj
 | 04 Voice | Replaceable TranscriptionProvider, Apple finalized captions, streamed ElevenLabs PCM, stop/replay/mute, independent cancellation, routing/interruption handlers | PCM tests and native parser pass. Actual permissions, audio and Bluetooth pending |
 | 05 Research/memory | Separate Google-grounded research tool, sources/support markers/rendered attribution, editable memories, per-device aliases | Citation/UTF-8 tests pass; actual grounding and UI attribution acceptance pending |
 | 06 Recovery | Transactional claims, no duplicate dispatch/replay, persisted unknown outcomes, saved-call reconciliation on resume, public-client refresh/revocation adapter and reported usage limits | Recovery/cancellation/duplicate/refresh fixtures pass. Native suspension/token/server-revocation tests pending |
-| 07 Release | Xcode configuration, actual-build-only unsigned packaging script, SideStore/PC startup instructions and acceptance checklist | Linux build script correctly refuses a fabricated IPA. Mac build/signing/installation/acceptance pending |
+| 07 Release | Xcode configuration, actual-build-only unsigned packaging script, SideStore/PC startup instructions and acceptance checklist | Mac arm64 Release build, 34 tests, verified unsigned IPA PASS; SideStore signing/install and real-device acceptance pending |
 
 All modules use the same app, contracts and persistence. The first vertical slice passes only with deterministic fixtures: text → model tool → validation → persisted action → fixture RDC executor → correlated model response. Real YouTube launch is still pending Module 00. Voice is integrated behind that same execution boundary, not evidence that the live slice passed.
 
@@ -88,7 +78,7 @@ All modules use the same app, contracts and persistence. The first vertical slic
 - App rejects this result. Settings accepts a **provider-issued public native client ID** as the smallest supported configuration change to test. Do not add a secret to the app, borrow ChatGPT tokens or introduce a custom backend as a hidden workaround.
 - Unknown service response formats fail closed. Capture real, redacted native device/tool/search/helper responses after authentication and refine the versioned adapters as needed.
 
-## Exact checks and versions
+## Initial Linux checks and provider versions
 
 - Inspected workspace was empty; no existing source or AGENTS.md found. No unrelated files changed.
 - Host: Ubuntu 24.04 x86_64; no Swift initially, no Xcode, Apple SDKs, signing identity or connected iPhone.
@@ -126,10 +116,15 @@ All modules use the same app, contracts and persistence. The first vertical slic
 2. User's ElevenLabs key and accessible authorized target voice ID. Voice creation/owner verification/sharing is separate; see docs/VOICE_SETUP.md. No sample material or target voice was created here.
 3. RDC-confirmed public native registration with token auth none, S256, exact callback, mcp:tools scope, advertised resource audience, refresh and supported grant-revocation route.
 4. Actual selected Windows PC/agent online after this app's own OAuth consent; helper path and per-device folder aliases; actual Windows, PowerShell, Node and RDC versions.
-5. Mac/Xcode/iOS SDK build access and the user's SideStore/signing route; actual iPhone runtime and permissions.
+5. User-side SideStore re-signing/install, actual iPhone runtime and permissions. Mac compilation is complete as recorded above.
 
 ## Next concrete step
 
-Resolve the RDC public-client registration gate with the provider while opening BlackBox.xcodeproj on a suitable Mac. Run core tests, compile the native target, fix any Apple-framework compile issues, then run the integrated Settings harness with user-entered keys and independent RDC consent. Capture redacted real response schemas. Select the PC and validate/test the helper, then prove the YouTube text slice over Wi-Fi and cellular before accepting voice desktop execution. Record each result in docs/ACCEPTANCE.md and this handoff.
-
-No paid services were enabled and no repository was published. Full requirements, setup, contracts, decisions and verified limits are included in the same source bundle.
+Import the delivered IPA into SideStore and record installation, launch and
+permission results in docs/ACCEPTANCE.md. Enter the user's Gemini/ElevenLabs keys
+only in native Settings and run the integrated provider harness. Resolve RDC's
+public native client registration with the provider; then verify independent
+OAuth, actual device/tool schemas and the helper before attempting the YouTube
+text slice over Wi-Fi and cellular. Keep the authentication gate closed until
+those checks succeed. No completed desktop action or voice quality is implied
+by successful compilation.

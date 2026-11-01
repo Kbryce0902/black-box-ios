@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-- A Mac with Xcode and an installed iOS SDK supporting the actual phone OS. Apple's current table lists Xcode 27.1 / iOS 27.1 with macOS Tahoe 26.6 or later; verify the current Apple table and your actual machine. This Linux host has neither Xcode nor Apple SDKs.
+- A Mac with Xcode and a suitable installed iOS SDK for compilation. The verified CI build used Xcode 26.3 (17C529), Apple Swift 6.2.4 and the iOS 26.2 SDK on macOS 15.8.2. Actual phone installation/launch is still pending. Check Apple's support table for direct Xcode device debugging on the actual phone OS; this Linux workspace uses the GitHub Mac runner for compilation.
 - Your own Gemini API key from Google AI Studio. Choose a model actually available to that key; the starting ID is configurable.
 - Your own ElevenLabs API key, access to the desired authorized voice ID and a supported TTS model.
 - A **public native RDC client registration** for `com.kellen.blackbox:/oauth/callback`, with PKCE S256 and no client secret. See FEASIBILITY.md: the tested dynamic path returned a confidential registration and is rejected.
@@ -13,8 +13,8 @@ Enter provider keys in the app, not a source/configuration file. No account key 
 ## Mac checks and build
 
 For a Mac runner hosted by GitHub instead of a local Mac, see
-[CLOUD_BUILD.md](CLOUD_BUILD.md). The workflow and packaging checks are prepared;
-repository publication, remote compilation and installation remain pending.
+[CLOUD_BUILD.md](CLOUD_BUILD.md). The workflow, remote compilation and packaging checks have passed;
+SideStore re-signing and phone installation remain pending.
 
 From the extracted BlackBox directory:
 
@@ -41,7 +41,7 @@ For a direct Xcode install, choose your signing team and a bundle ID provisioned
 
 Use the current official guide: https://docs.sidestore.io/docs/installation/install
 
-The documented process includes USB trust/pairing on initial setup, Apple Account signing, enabling Developer Mode where required, LocalDevVPN and refreshing SideStore. Follow its current OS-specific instructions. Import the successfully built unsigned IPA through SideStore's app installation workflow and let SideStore re-sign it. Verify microphone/Speech permission prompts and the OAuth callback afterward. This project uses no JIT, background-audio keepalive or special distribution entitlement. Actual compatibility on the user's iPhone 18 Pro Max and iOS build has not been tested.
+The documented process includes USB trust/pairing on initial setup, Apple Account signing, enabling Developer Mode where required, LocalDevVPN and refreshing SideStore. Follow its current OS-specific instructions. Import the successfully built unsigned IPA through SideStore's app installation workflow and let SideStore re-sign it. Verify microphone/Speech permission prompts and the OAuth callback afterward. This project uses no JIT, background-audio keepalive or special distribution entitlement. The real arm64 IPA is built, but compatibility on the user's actual iPhone and iOS build has not been tested.
 
 If SideStore changes the bundle identifier, verify independent Keychain storage and callback behavior after every installation/update; the source's callback scheme is explicit and not generated from the re-signed identifier.
 

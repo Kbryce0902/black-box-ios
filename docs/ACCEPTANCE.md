@@ -1,10 +1,12 @@
 # Acceptance checklist — real results required
 
-All rows below start **PENDING**. Fill in actual device ID, OS/build, runtime/package versions, date, network and observed result after running them. Do not convert a portable fixture result to a live pass.
+Statuses below distinguish completed compilation from pending real-device checks. Fill in actual device ID, OS/build, runtime/package versions, date, network and observed result after running them. Do not convert a portable fixture result to a live pass.
 
 | Check | Required observation | Status |
 |---|---|---|
-| Native build | Xcode simulator and iphoneos compile; compiler/SDK versions recorded | PENDING |
+| Native device build | Release arm64 iphoneos compile; compiler/SDK versions recorded | PASS — Xcode 26.3, Swift 6.2.4, iOS SDK 26.2, run 41288398459 |
+| Simulator | Simulator compile and execution | PENDING |
+| IPA packaging | Physical iOS Mach-O, ZIP integrity and exact downloaded checksums | PASS — 783221 bytes; SHA-256 in HANDOFF.md |
 | Phone identity | Runtime hw.machine and OS/build; actual target confirmed | PENDING |
 | SideStore | Re-signed install, launch and refresh on actual OS | PENDING |
 | Gemini direct | Native API response with user's key and selected model | PENDING |
@@ -41,4 +43,4 @@ Record the Windows helper script's separate acceptance output with Windows build
 4. Select that device, check the helper, send the YouTube text request and record each observed result.
 5. Repeat over cellular; only then test finalized voice on the proven path.
 
-No real-device result was available in the development environment used for this source delivery.
+The native device build and package checks succeeded. No actual iPhone installation or real-device result is available yet.

@@ -14,15 +14,15 @@ as public with write access through the GitHub connection. The existing
 AetherMedia repository is unrelated and must not be reused.
 
 The destination is the dedicated **public `Kbryce0902/black-box-ios` repository**
-containing only this BlackBox source tree. The first source upload and native
-compilation are in progress. No Gemini, ElevenLabs or RDC credentials are uploaded.
+containing only this BlackBox source tree. The source upload and native compilation succeeded in
+run 41288398459 at source commit dbec5b93dd1d20e209462f5c7076871c1970cb34. No Gemini, ElevenLabs or RDC credentials are uploaded.
 
 The workflow refuses private-repository Mac jobs before allocating a runner,
 because private usage can exceed an included allowance and incur charges.
 Standard hosted compute for public repositories is free under GitHub's current
 policy. Artifact retention is limited to one day; no paid service is enabled.
 
-## Once the dedicated repository is available
+## Reproduce the verified build
 
 1. Upload the **contents of `BlackBox/` at repository root**. Do not upload the
    enclosing source ZIP, `.build/`, temporary files, provider credentials,
@@ -52,3 +52,13 @@ Official references:
 - https://docs.github.com/en/actions/concepts/billing-and-usage
 - https://github.com/actions/runner-images/blob/main/images/macos/macos-15-arm64-Readme.md
 - https://docs.sidestore.io/docs/installation/install
+
+## Retrieved artifact
+
+The successful native build and all 34 Mac tests passed. The downloaded
+`BlackBox-0.1.0-unsigned.ipa` is 783221 bytes; SHA-256:
+
+`3376bb2827ea7ff468d303b11f5d1a8abec109a572d3a2222c0371ab7c71505c`
+
+It targets arm64 iPhoneOS, minimum iOS 17.0. SideStore re-signing and actual phone
+installation/launch remain pending. The RDC native-client gate is unchanged.
