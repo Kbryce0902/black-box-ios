@@ -1,0 +1,10 @@
+{
+  "checked_at": "2026-11-01",
+  "registration_status": 200,
+  "requested_auth_method": "none",
+  "returned_auth_method": "client_secret_post",
+  "client_secret_issued": true,
+  "exact_callback_returned": true,
+  "authorize_status": 403,
+  "invalid_grant_probe_status": 403
+}

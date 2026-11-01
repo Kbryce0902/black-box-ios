@@ -6,12 +6,24 @@ import CryptoKit
 import UIKit
 import BlackBoxCore
 
+// Each envelope is one atomic, device-only Keychain item. Never put these in
+// AppSettings, SQLite, prompts, diagnostics, source or a distributed IPA.
+struct RDCGrant: Codable {
+    let discovery: OAuthDiscovery
+    let registration: OAuthRegistration
+    let tokens: OAuthTokens
+}
+private struct RDCPendingRegistration: Codable {
+    let discovery: OAuthDiscovery
+    let registration: OAuthRegistration
+}
+
 @MainActor final class RDCSession: NSObject, ObservableObject, ASWebAuthenticationPresentationContextProviding {
     @Published var status = "Not signed in"
     @Published var discovery: OAuthDiscovery?
     @Published var devices: [PCDevice] = []
     @Published var tools: [JSONValue] = []
-    @Published var diagnostic = "Native authentication has not been verified."
+    @Published var diagnostic = "Sign in to RDC to connect your paired computers."
     @Published var authenticating = false
     let mcp = MCPClient()
     private let vault = KeychainStore()
@@ -19,83 +31,143 @@ import BlackBoxCore
     private var browserSession: ASWebAuthenticationSession?
     private var refreshing: Task<OAuthTokens, Error>?
     private var epoch = UUID()
-    var signedIn: Bool { (try? vault.load(OAuthTokens.self, account: "rdc.tokens")) != nil }
+    private var attempt: UUID?
+    var signedIn: Bool { (try? loadGrant()) != nil }
+    private func loadGrant() throws -> RDCGrant? {
+        if let grant = try vault.load(RDCGrant.self, account: "rdc.grant") { return grant }
+        // Migrate a previously successful public-client login without changing
+        // its registration or losing a rotated refresh token.
+        guard let d = try vault.load(OAuthDiscovery.self, account: "rdc.discovery"),
+              let r = try vault.load(OAuthRegistration.self, account: "rdc.registration"),
+              let t = try vault.load(OAuthTokens.self, account: "rdc.tokens") else { return nil }
+        let grant = RDCGrant(discovery: d, registration: r, tokens: t)
+        try vault.save(grant, account: "rdc.grant"); return grant
+    }
     func presentationAnchor(for session: ASWebAuthenticationSession) -> ASPresentationAnchor {
         UIApplication.shared.connectedScenes.compactMap { ($0 as? UIWindowScene)?.keyWindow }.first ?? ASPresentationAnchor()
     }
     func probe() async throws {
-        discovery = try await oauth.discover()
-        status = "Discovery verified; sign-in pending"
-        diagnostic = "Live metadata supports PKCE S256. Public client registration, callback and token access still need proof."
+        let captured = epoch, d = try await oauth.discover()
+        guard captured == epoch else { throw CancellationError() }
+        discovery = d; status = "RDC available; sign-in pending"
+        diagnostic = "RDC supports browser sign-in with PKCE. Sign in to authorize Black_Box."
+    }
+    private func checkAttempt(_ id: UUID) throws {
+        try Task.checkCancellation()
+        guard attempt == id else { throw CancellationError() }
     }
     func signIn(publicClientID: String) async throws {
         guard !authenticating else { throw BBError.setup("An RDC sign-in is already in progress.") }
-        authenticating = true
-        defer { authenticating = false; browserSession = nil }
-        try await probe()
-        guard let d = discovery else { return }
-        let registration: OAuthRegistration
-        if !publicClientID.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            registration = OAuthRegistration(clientID: publicClientID.trimmingCharacters(in: .whitespacesAndNewlines))
-        } else { registration = try await oauth.register(d) }
-        // Only an independently registered public ID can reach this point. No shared secret is accepted.
-        let verifier = try random(); let state = try random()
-        let challenge = Data(SHA256.hash(data: Data(verifier.utf8))).base64URLEncoded
-        let url = try oauth.authorizationURL(d, registration: registration, state: state, challenge: challenge)
-        let callback: URL = try await withCheckedThrowingContinuation { continuation in
-            let session = ASWebAuthenticationSession(url: url, callbackURLScheme: "com.kellen.blackbox") { callback, error in
-                if let error { continuation.resume(throwing: error) }
-                else if let callback { continuation.resume(returning: callback) }
-                else { continuation.resume(throwing: BBError.wire("Missing sign-in callback.")) }
+        let id = UUID(); attempt = id; authenticating = true
+        defer { if attempt == id { attempt = nil; authenticating = false; browserSession = nil } }
+        do {
+            status = "Checking RDC sign-in…"; diagnostic = status
+            let d = try await oauth.discover(); try checkAttempt(id); discovery = d
+            let registration: OAuthRegistration
+            let manualID = publicClientID.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !manualID.isEmpty {
+                registration = OAuthRegistration(clientID: manualID)
+                try oauth.validate(registration, discovery: d)
+            } else {
+                let pending = try vault.load(RDCPendingRegistration.self, account: "rdc.pending")
+                let active = try loadGrant()
+                let cached = pending.map { ($0.discovery, $0.registration) } ?? active.map { ($0.discovery, $0.registration) }
+                if let (oldDiscovery, oldRegistration) = cached,
+                   oldDiscovery.issuer == d.issuer, oldDiscovery.resource == d.resource,
+                   (try? oauth.validate(oldRegistration, discovery: d)) != nil {
+                    registration = oldRegistration
+                } else {
+                    status = "Registering this installation…"; diagnostic = status
+                    registration = try await oauth.register(d); try checkAttempt(id)
+                }
+                // Cancel/retry reuses this installation's credential. It never
+                // overwrites the registration belonging to an existing grant.
+                try vault.save(RDCPendingRegistration(discovery: d, registration: registration), account: "rdc.pending")
             }
-            session.presentationContextProvider = self; session.prefersEphemeralWebBrowserSession = true
-            browserSession = session
-            if !session.start() { continuation.resume(throwing: BBError.setup("Could not open native sign-in.")) }
+            try checkAttempt(id)
+            let verifier = try random(), state = try random()
+            let challenge = Data(SHA256.hash(data: Data(verifier.utf8))).base64URLEncoded
+            let url = try oauth.authorizationURL(d, registration: registration, state: state, challenge: challenge)
+            status = "Complete RDC sign-in in the browser…"; diagnostic = status
+            let callback: URL = try await withCheckedThrowingContinuation { continuation in
+                let session = ASWebAuthenticationSession(url: url, callbackURLScheme: "com.kellen.blackbox") { callback, error in
+                    if let error {
+                        if let authError = error as? ASWebAuthenticationSessionError, authError.code == .canceledLogin { continuation.resume(throwing: CancellationError()) }
+                        else { continuation.resume(throwing: error) }
+                    } else if let callback { continuation.resume(returning: callback) }
+                    else { continuation.resume(throwing: BBError.wire("Missing RDC sign-in callback.")) }
+                }
+                session.presentationContextProvider = self; session.prefersEphemeralWebBrowserSession = true
+                browserSession = session
+                if !session.start() { continuation.resume(throwing: BBError.setup("Could not open RDC sign-in.")) }
+            }
+            try checkAttempt(id); browserSession = nil
+            let code = try OAuthClient.code(from: callback, expectedState: state)
+            status = "Completing RDC sign-in…"; diagnostic = status
+            let tokens = try await oauth.token(d, registration: registration, code: code, verifier: verifier)
+            try checkAttempt(id)
+            try vault.save(RDCGrant(discovery: d, registration: registration, tokens: tokens), account: "rdc.grant")
+            refreshing?.cancel(); refreshing = nil; epoch = UUID(); await mcp.reset(); try checkAttempt(id)
+            try vault.delete("rdc.pending")
+            status = "RDC signed in; loading computers…"; diagnostic = status
+            try await refreshDevices(); try checkAttempt(id)
+        } catch {
+            if attempt == id {
+                status = error is CancellationError ? "RDC sign-in canceled" : "RDC sign-in failed"
+                diagnostic = error is CancellationError ? status : error.localizedDescription
+            }
+            throw error
         }
-        browserSession = nil
-        let code = try OAuthClient.code(from: callback, expectedState: state)
-        let tokens = try await oauth.token(d, registration: registration, code: code, verifier: verifier)
-        try vault.save(d, account: "rdc.discovery"); try vault.save(registration, account: "rdc.registration"); try vault.save(tokens, account: "rdc.tokens")
-        await mcp.reset()
-        epoch = UUID(); status = "Signed in independently"
-        try await refreshDevices()
+    }
+    func cancelSignIn() {
+        attempt = nil; authenticating = false
+        let session = browserSession; browserSession = nil; session?.cancel()
+        status = "RDC sign-in canceled"; diagnostic = status
     }
     func accessToken() async throws -> String {
-        guard let tokens = try vault.load(OAuthTokens.self, account: "rdc.tokens") else { throw BBError.setup("Sign in to RDC within Black_Box.") }
-        if tokens.expiry.timeIntervalSinceNow > 60 { return tokens.accessToken }
-        if let refreshing { return try await refreshing.value.accessToken }
-        guard let refresh = tokens.refreshToken, let d = try vault.load(OAuthDiscovery.self, account: "rdc.discovery"),
-              let registration = try vault.load(OAuthRegistration.self, account: "rdc.registration") else { throw BBError.setup("RDC session expired; sign in again.") }
+        guard let grant = try loadGrant() else { throw BBError.setup("Sign in to RDC within Black_Box.") }
+        if grant.tokens.expiry.timeIntervalSinceNow > 60 { return grant.tokens.accessToken }
+        if let refreshing {
+            let captured = epoch, updated = try await refreshing.value
+            guard captured == epoch else { throw CancellationError() }
+            return updated.accessToken
+        }
+        guard let refresh = grant.tokens.refreshToken else { throw BBError.setup("RDC session expired; sign in again.") }
         let capturedEpoch = epoch
-        let job = Task { try await oauth.token(d, registration: registration, refresh: refresh) }
-        refreshing = job; defer { refreshing = nil }
+        let job = Task { try await oauth.token(grant.discovery, registration: grant.registration, refresh: refresh) }
+        refreshing = job; defer { if capturedEpoch == epoch { refreshing = nil } }
         do {
             let updated = try await job.value
             guard capturedEpoch == epoch else { throw CancellationError() }
-            try vault.save(updated, account: "rdc.tokens"); return updated.accessToken
-        } catch { status = "Authentication needs attention"; throw error }
+            try vault.save(RDCGrant(discovery: grant.discovery, registration: grant.registration, tokens: updated), account: "rdc.grant")
+            return updated.accessToken
+        } catch {
+            if capturedEpoch == epoch { status = "RDC authentication needs attention"; diagnostic = error.localizedDescription }
+            throw error
+        }
     }
     func refreshDevices() async throws {
-        let token = try await accessToken()
-        tools = try await mcp.tools(token: token)
-        guard tools.contains(where: { $0["name"].string == "list_devices" }) else { throw BBError.wire("RDC did not advertise list_devices.") }
+        let captured = epoch, token = try await accessToken()
+        let fetchedTools = try await mcp.tools(token: token)
+        guard captured == epoch else { throw CancellationError() }
+        guard fetchedTools.contains(where: { $0["name"].string == "list_devices" }) else { throw BBError.wire("RDC did not advertise list_devices.") }
         let result = try await mcp.call("list_devices", arguments: [:], token: token)
-        let payload = try MCPClient.payload(result)
-        devices = try MCPClient.devices(payload)
-        status = "Connected · \(devices.count) paired device(s)"
-        diagnostic = "Independent OAuth and device enumeration succeeded at \(Date().formatted()). Refresh, revocation and cellular actions still require acceptance tests."
+        let fetchedDevices = try MCPClient.devices(MCPClient.payload(result))
+        guard captured == epoch else { throw CancellationError() }
+        tools = fetchedTools; devices = fetchedDevices
+        status = "Connected · \(devices.count) paired computer(s)"
+        diagnostic = devices.isEmpty ? "RDC sign-in succeeded. Pair a computer in the RDC dashboard." : "Select your computer in the Computer tab, then check the Windows helper."
     }
     func revoke() async throws {
-        guard let d = try vault.load(OAuthDiscovery.self, account: "rdc.discovery"), let r = try vault.load(OAuthRegistration.self, account: "rdc.registration"),
-              let t = try vault.load(OAuthTokens.self, account: "rdc.tokens") else { throw BBError.setup("No local RDC grant to revoke.") }
-        try await oauth.revoke(d, registration: r, tokens: t)
+        guard let grant = try loadGrant() else { throw BBError.setup("No local RDC grant to revoke.") }
+        try await oauth.revoke(grant.discovery, registration: grant.registration, tokens: grant.tokens)
         try await removeLocal()
     }
     func removeLocal() async throws {
-        epoch = UUID(); refreshing?.cancel(); refreshing = nil; browserSession?.cancel(); browserSession = nil
-        for account in ["rdc.tokens", "rdc.registration", "rdc.discovery"] { try vault.delete(account) }
-        await mcp.reset(); devices = []; tools = []; status = "Local credentials removed"
-        diagnostic = "Local removal does not revoke server access. Use RDC dashboard if server revocation is unavailable."
+        epoch = UUID(); cancelSignIn(); refreshing?.cancel(); refreshing = nil
+        for account in ["rdc.grant", "rdc.pending", "rdc.tokens", "rdc.registration", "rdc.discovery"] { try vault.delete(account) }
+        await mcp.reset(); devices = []; tools = []; status = "Local RDC credentials removed"
+        diagnostic = "Use RDC's dashboard to revoke access on the server."
     }
     private func random() throws -> String {
         var b = [UInt8](repeating: 0, count: 32)

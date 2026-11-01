@@ -147,3 +147,24 @@ private actor SuspendedSpeech: SpeechClient {
         XCTAssertEqual(audio.status, "Speech complete")
     }
 }
+
+@MainActor final class RDCKeychainTests: XCTestCase {
+    func testInstallationCredentialPersistsInDeviceKeychainAndDeletes() throws {
+        let vault = KeychainStore(), account = "fixture.rdc.registration." + UUID().uuidString
+        defer { try? vault.delete(account) }
+        let credential = OAuthRegistration(clientID: "fixture-client", tokenEndpointAuthMethod: "client_secret_post", clientSecret: "fixture-install-secret")
+        try vault.save(credential, account: account)
+        let loaded = try XCTUnwrap(vault.load(OAuthRegistration.self, account: account))
+        XCTAssertEqual(loaded.clientSecret, "fixture-install-secret"); XCTAssertEqual(loaded.authenticationMethod, "client_secret_post")
+        try vault.delete(account); XCTAssertNil(try vault.get(account))
+    }
+    func testGrantEnvelopeKeepsRegistrationAndRotatedTokenTogether() throws {
+        let vault = KeychainStore(), account = "fixture.rdc.grant." + UUID().uuidString
+        defer { try? vault.delete(account) }
+        let d = OAuthDiscovery(resource: "https://mcp.desktopcommander.app", issuer: "https://mcp.desktopcommander.app", authorizationEndpoint: "https://mcp.desktopcommander.app/authorize", tokenEndpoint: "https://mcp.desktopcommander.app/token", registrationEndpoint: nil, revocationEndpoint: nil, scopes: ["mcp:tools"], authMethods: ["client_secret_post"])
+        let r = OAuthRegistration(clientID: "fixture-client", tokenEndpointAuthMethod: "client_secret_post", clientSecret: "fixture-install-secret")
+        try vault.save(RDCGrant(discovery: d, registration: r, tokens: OAuthTokens(accessToken: "fixture-access", refreshToken: "fixture-rotated", expiry: Date())), account: account)
+        let loaded = try XCTUnwrap(vault.load(RDCGrant.self, account: account))
+        XCTAssertEqual(loaded.registration.clientSecret, "fixture-install-secret"); XCTAssertEqual(loaded.tokens.refreshToken, "fixture-rotated")
+    }
+}

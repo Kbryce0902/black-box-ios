@@ -68,3 +68,16 @@ The Linux SwiftPM test launcher intermittently crashes in this execution host wh
   compiled and verified the device IPA. The legacy Bluetooth option probe was
   accepted in the simulator, so the owner's exact physical -50 was not
   reproduced. Keep real phone speech/output-route acceptance pending.
+
+## RDC registration correction — 0.1.4
+
+- Replace the overly broad secret-free-only gate with supported, advertised
+  authentication for DCR credentials issued separately to each installation.
+  RFC 8252 section 8.4 explicitly permits this; section 8.5 prohibits treating
+  a bundled shared credential as confidential. Nothing private is bundled.
+- Preserve PKCE S256, callback/state validation and the independent user browser
+  grant. Cache registration and tokens only in device-only Keychain envelopes.
+- Parse the observed RDC text device format using explicit UUID/status fields.
+  Do not infer machine availability from prose or the ChatGPT connection.
+- Live registration was observed, but interactive consent/token/device control
+  on the owner's phone remain unverified until that app completes the flow.

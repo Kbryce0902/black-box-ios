@@ -1,7 +1,53 @@
 # Black_Box implementation handoff
 
-Updated 2026-11-01. Source version **0.1.3 development**. Continue this repository;
+Updated 2026-11-01. Source version **0.1.4 development**. Continue this repository;
 do not restart from a proposal.
+
+## RDC independent sign-in compatibility — 0.1.4 (build verification pending)
+
+The owner confirmed 0.1.3 mostly works, then reached the exact native-registration
+error while connecting RDC. The PC's RDC agent was independently observed online
+through the existing connector; this is NOT Black_Box's own grant or control proof.
+
+The earlier public-only gate was too narrow. RFC 8252 section 8.4 explicitly
+allows Dynamic Client Registration to provision per-instance native credentials;
+it does not require packaging a shared secret in the app. Current live discovery
+advertises PKCE S256, none/client_secret_post and refresh. One unauthenticated
+probe reproduced a correct callback and a newly issued client_secret_post
+credential. The credential was never emitted or written; only whitelisted
+metadata is in Verification/rdc-compatibility-0.1.4.json. Authorize and deliberately
+invalid-code token probes returned 403 in this execution environment. No browser
+consent, real authorization code, access token or independent user tool call was
+obtained. Do not claim live login from that partial probe.
+
+Implemented: accept supported/advertised per-install auth method (none, post,
+basic), retain exact callback plus S256/state checks, send the returned credential
+only to the trusted token/revocation endpoint, use it for refresh and redact errors.
+Runtime registrations are cached in a device-only Keychain item. Credentials and
+rotated tokens are one atomic Keychain grant envelope; old public grants migrate.
+Pending registration is separate from a connected grant, preventing canceled
+re-auth from replacing its credential. Sign-in now shows phases/cancel/error and
+rejects late completion after cancel/remove. No static/shared secret, connector
+token reuse, alternate provider, server deployment or billing change is introduced.
+
+The observed list_devices reply is formatted text, not only JSON. Added a strict
+adapter for its explicit status and UUID fields; malformed/duplicate/ambiguous
+records still fail. MCP reset rejects stale session replies; device selection and
+Windows helper gates remain intact. Generic OAuth errors retain bounded reasons
+while redacting token/secret/code/verifier values.
+
+17 new core regressions cover DCR, PKCE, all credential methods, refresh/revoke,
+legacy coding, expiry, rejection, redaction, no retries, device-list formats and
+stale MCP reset. Two hosted native tests exercise actual Keychain storage and
+atomic grant persistence; nine existing audio tests are retained. Expected test
+counts: 81 core + 11 native. Local plist/YAML/XML/Bash checks pass. Mac compilation,
+tests and artifact retrieval remain pending. Version 0.1.4/build 5 preserves
+Gemini/ElevenLabs keys, voice settings, bundle ID and SQLite.
+
+References:
+https://www.rfc-editor.org/rfc/rfc8252.html#section-8.4
+https://www.rfc-editor.org/rfc/rfc7591.html
+https://github.com/modelcontextprotocol/python-sdk/blob/main/docs/migration.md
 
 ## Native speech playback repair — 0.1.3
 

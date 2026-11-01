@@ -105,3 +105,19 @@ A terminal result is one complete JSON line with `marker: BLACKBOX_HELPER_V1`, m
   provider request/stream/decoding errors. Keep provider redaction guarantees.
 - CI includes a hosted native iOS Simulator test target. Simulator playback is
   evidence about that runtime, not proof of physical headset or live-key access.
+
+# RDC native registration compatibility (0.1.4)
+
+- A per-install DCR credential may be none, client_secret_post or client_secret_basic
+  only when advertised by the trusted server. Reject missing/expired credentials,
+  unadvertised methods and a changed callback. PKCE S256/state remain required.
+- Never embed a shared secret in source/IPA or reuse another app's token. Runtime
+  client credentials go only to trusted HTTPS token/revocation endpoints. Never
+  include them in authorization URLs, MCP requests, logs, SQLite or model context.
+- Store active discovery/registration/tokens atomically in device-only Keychain;
+  cache pending registration separately, migrate legacy public grants, and remove
+  all active/pending/legacy records on local credential removal.
+- Cancellation/removal invalidates late sign-in/refresh/list/MCP replies. No
+  authorization-code, refresh or tool mutation request is automatically retried.
+- Device text adapter accepts the observed explicit UUID/status records. Device
+  selection and reviewed Windows helper verification are still prerequisites.

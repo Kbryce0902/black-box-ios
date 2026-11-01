@@ -25,6 +25,9 @@ public struct DirectHTTP: HTTPClient {
             if request.url?.host == "api.elevenlabs.io" {
                 throw ElevenLabsAPIError(data: data, statusCode: response.statusCode, request: request)
             }
+            if ["mcp.desktopcommander.app", "auth.desktopcommander.app"].contains(request.url?.host ?? "") {
+                throw RDCOAuthError(data: data, statusCode: response.statusCode, request: request)
+            }
             throw BBError.http(response.statusCode)
         }
         guard data.count <= 12_000_000 else { throw BBError.limit }

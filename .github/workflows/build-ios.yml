@@ -60,7 +60,7 @@ jobs:
           bash Scripts/build-ios.sh unsigned 2>&1 | tee build/logs/device-build.log
           python3 Scripts/verify-ipa.py build/BlackBox-*-unsigned.ipa | tee build/logs/ipa-verification.json
 
-      - name: Exercise native audio on iOS Simulator
+      - name: Exercise native audio and RDC storage on iOS Simulator
         run: |
           set -euo pipefail
           bash Scripts/test-ios-audio.sh 2>&1 | tee build/logs/ios-audio-tests.log

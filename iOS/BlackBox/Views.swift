@@ -267,7 +267,17 @@ struct SettingsView: View {
                 Section("Independent RDC sign-in") {
                     Text(rdc.diagnostic).font(.caption).foregroundStyle(.secondary)
                     TextField("RDC-issued public client ID (if provided)", text: $publicClientID).textInputAutocapitalization(.never).autocorrectionDisabled()
-                    Button("Sign in with PKCE") { m.perform { try await rdc.signIn(publicClientID: publicClientID); m.recordCheck("PASS · independent RDC sign-in and device listing") } }
+                        .disabled(rdc.authenticating)
+                    Text("Leave blank for automatic sign-in.").font(.caption).foregroundStyle(.secondary)
+                    if rdc.authenticating {
+                        ProgressView(rdc.status)
+                        Button("Cancel RDC sign-in", role: .cancel) { rdc.cancelSignIn() }
+                    } else {
+                        Button("Sign in with PKCE") { m.perform {
+                            do { try await rdc.signIn(publicClientID: publicClientID); m.recordCheck("PASS · independent RDC sign-in and device listing") }
+                            catch is CancellationError { }
+                        } }
+                    }
                     Button("Revoke server grant") { m.perform { try await rdc.revoke() } }
                     Link("Open RDC dashboard", destination: URL(string: "https://mcp.desktopcommander.app")!)
                     Button("Remove local RDC credentials", role: .destructive) { m.perform { try await rdc.removeLocal() } }

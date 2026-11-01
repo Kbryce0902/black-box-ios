@@ -68,13 +68,13 @@ final class ProtocolTests: XCTestCase {
         _ = try OAuthClient.trusted("https://mcp.desktopcommander.app/token")
         for u in ["http://mcp.desktopcommander.app", "https://evil.com", "https://user:pass@mcp.desktopcommander.app/token"] { XCTAssertThrowsError(try OAuthClient.trusted(u)) }
     }
-    func testConfidentialRegistrationRejected() async throws {
+    func testUnsupportedRegistrationMethodRejected() async throws {
         let http = FixtureHTTP { request in
-            let d: JSONValue = ["client_id": "fixture", "client_secret": "fixture-secret", "token_endpoint_auth_method": "client_secret_post", "redirect_uris": [.string(OAuthClient.callback)]]
+            let d: JSONValue = ["client_id": "fixture", "token_endpoint_auth_method": "private_key_jwt", "redirect_uris": [.string(OAuthClient.callback)]]
             return (try d.data(), HTTPURLResponse(url: request.url!, statusCode: 201, httpVersion: nil, headerFields: nil)!)
         }
         let d = OAuthDiscovery(resource: "https://mcp.desktopcommander.app", issuer: "https://mcp.desktopcommander.app", authorizationEndpoint: "https://mcp.desktopcommander.app/authorize", tokenEndpoint: "https://mcp.desktopcommander.app/token", registrationEndpoint: "https://mcp.desktopcommander.app/register", revocationEndpoint: nil, scopes: ["mcp:tools"])
-        do { _ = try await OAuthClient(http: http).register(d); XCTFail("Confidential registration accepted") } catch { XCTAssertTrue(error.localizedDescription.contains("secret-free")) }
+        do { _ = try await OAuthClient(http: http).register(d); XCTFail("Unsupported method accepted") } catch { XCTAssertTrue(error.localizedDescription.contains("unsupported")) }
     }
     func testRefreshAudienceAndRotationFallback() async throws {
         let http = FixtureHTTP { request in
