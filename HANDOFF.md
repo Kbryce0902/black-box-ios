@@ -1,6 +1,6 @@
 # Black_Box implementation handoff
 
-## Active repair — 0.1.5 desktop command readiness (Mac build pending)
+## Desktop command readiness repair — 0.1.5
 
 Owner now reports successful 0.1.4 native RDC login and PC-online status, but
 Gemini claims it has no execution tools/network/shell and suggests port 3389.
@@ -20,7 +20,7 @@ complete capabilities. No elevation, service/startup/firewall, global execution
 policy, new grant, or RDP configuration was changed. Do not put the real user's
 path, PC ID, process list or credentials in this public repository.
 
-Prepared 0.1.5/build 6: fixed read-only helper discovery; coalesced 25-second
+Implemented and native-compiled 0.1.5/build 6: fixed read-only helper discovery; coalesced 25-second
 checks with stale-response/cancellation isolation; recheck on foreground/PC
 selection and before freezing request tools; persist discovered paths; distinct
 PC ready/setup/checking states; precise current-tool/readiness prompt and RDP
@@ -28,12 +28,16 @@ correction; accurate no-tool task completion detail. Original allowlists,
 per-device roots, action claims/review and unknown-outcome behavior remain.
 Tests added for transport/device binding, capability evidence, wrapper parsing,
 deadlines, coalescing, invalidation, retry and prompt-to-dispatch behavior.
-No new Mac test/build pass is claimed yet. Next: run the public Mac workflow,
-inspect tests/device compilation, verify downloaded IPA, update the existing
-artifact and deliver the installed-over-same-app instructions. Current released
-artifact below is still 0.1.4 until this new build passes.
+Verification complete in public workflow 41337372895, job 124939938480 at source
+5daf301fee080a8c0b491a2eca12cf6e45cb34ee: **94 core + 11 native iOS tests, zero failures**, real arm64 iPhone
+compilation, packaging and independent downloaded artifact checks all PASS.
+The 13 new core cases exercise desktop probe/controller/context behavior.
+The updated IPA was preserved as the next version of the existing deliverable.
+No new Linux Swift test run or live user-key Gemini call occurred here.
+Next owner check: install 0.1.5 over the existing SideStore app, wait for PC ready,
+then request current RAM usage and inspect the saved inspect_resources action.
 
-Updated 2026-11-01. Source version **0.1.4 development**. Continue this repository;
+Updated 2026-11-01. Source version **0.1.5 development**. Continue this repository;
 do not restart from a proposal.
 
 ## RDC independent sign-in compatibility — 0.1.4
@@ -221,37 +225,29 @@ Current release provenance is recorded below.
 
 ## Current outcome
 
-**Native 0.1.4 (build 5) has been compiled, tested, retrieved and preserved.**
+**Native 0.1.5 (build 6) has been compiled, tested, retrieved and preserved.**
 
-- Repository: https://github.com/Kbryce0902/black-box-ios (owner-authorized public
-  repository containing only this project).
-- Exact compiled source: `4c82946be94d49852ffba85b732f92f5b5e96144`.
-- Successful run: https://github.com/Kbryce0902/black-box-ios/actions/runs/41331459253
-  (job 124922270683; all workflow steps succeeded).
+- Repository: https://github.com/Kbryce0902/black-box-ios (owner-authorized public).
+- Exact compiled source: `5daf301fee080a8c0b491a2eca12cf6e45cb34ee`.
+- Successful run: https://github.com/Kbryce0902/black-box-ios/actions/runs/41337372895
+  (job 124939938480; all workflow steps succeeded).
 - macOS 15.8.2 arm64, Xcode 26.3 (17C529), Apple Swift 6.2.4, iOS 26.2 SDK;
-  Release arm64 iphoneos, minimum iOS 17.0; simulator tests also use iOS 26.2.
-- **81 Mac core tests + 11 native iOS tests; zero failures.** Native checks
-  include nine audio tests and two real Keychain tests with synthetic records.
-- `BlackBox-0.1.4-unsigned.ipa`: 909583 bytes, bundle com.kellen.blackbox.
-- IPA SHA-256: `b5b5f9c37c5008f466b0fb6014052c4ccf2704128b7a68e396033adcaa3eff9c`.
-- GitHub artifact 13093927165; outer ZIP SHA-256: `8a1ff5fcfe9a9fe886404e41701739aff5bea01789c7d398cbf16c40fc916a8e`.
-- Downloaded ZIP and enclosed IPA matched both digests. ZIP integrity, version,
-  executable permissions, arm64 Mach-O and physical iOS platform checks passed
-  independently after download.
-
-The owner reports 0.1.3 mostly works and then reproduced the app's RDC registration
-rejection. The PC agent was observed online via the separate existing connector.
-The new registration handling and device adapter are implemented and tested;
-Black_Box's own browser grant, callback/token, device listing and actual desktop
-control still need live phone acceptance. The partial unauthenticated live probe
-is recorded accurately above; no fixture or existing connector substitutes for
-this independent grant. No user account was signed into by the build process.
-
-Install over the current app through SideStore. Bundle, Keychain service and
-SQLite identities are retained. Gemini/ElevenLabs keys and voice settings are
-not changed by this update. No real provider key, private Voice ID, per-install
-credential, signing identity or voice material was uploaded to the repository.
-No billed inference, subscription or account-permission change occurred here.
+  Release arm64 iphoneos, minimum iOS 17.0; simulator tests use iOS 26.2.
+- **94 Mac core tests + 11 native iOS tests, zero failures.** The native tests
+  include nine audio and two real Keychain regressions with synthetic data.
+- `BlackBox-0.1.5-unsigned.ipa`: 940422 bytes, bundle com.kellen.blackbox.
+- IPA SHA-256: `92f951540b4046985291b5f11806ab6f71d9b67e1866d15ebe273643c1490fe9`.
+- GitHub artifact 13095659846; outer ZIP SHA-256: `20610c73d2b5ab2c070006c1f7167eddbf3015f9039b4f2daeb0b7fc2699882c`.
+- Downloaded outer archive and enclosed IPA matched both expected digests.
+  ZIP integrity, version/build/bundle identity, executable permissions,
+  arm64 Mach-O and physical iOS platform checks passed independently.
+- Same app, Keychain, SQLite and callback identities. Simulator host uses local
+  ad-hoc signing for real Keychain tests; the delivered device IPA remains
+  unsigned for the owner's existing SideStore workflow.
+- Owner reports 0.1.4 native RDC sign-in and PC-online display. Connector helper
+  discovery/capabilities/resource tests passed separately. **Native 0.1.5 PC
+  command dispatch, refresh/revoke, cellular and physical audio routing still
+  require phone acceptance.** No connector credential was put in the app.
 
 ## Compilation changes and checkpoints
 
@@ -289,6 +285,11 @@ No billed inference, subscription or account-permission change occurred here.
     artifact packaging. Subsequent documentation-only commits do not change
     that binary. No Apple account/certificate or paid signing was used.
 
+12. Commit `5daf301fee080a8c0b491a2eca12cf6e45cb34ee` implements 0.1.5 desktop readiness. Run 41337372895
+    passed all 94 core and 11 native tests, real device compilation, packaging
+    and verified artifact download. Subsequent docs-only commits do not change
+    the compiled source or trigger an unnecessary rebuild.
+
 The prepared workflow skips private-repository Mac jobs before allocation and
 retains artifacts for one day. No private runner minutes or paid-service/billing
 settings were enabled. The standalone IPA was saved for delivery because GitHub
@@ -303,14 +304,14 @@ Swift 5 language mode as configured. No warning was promoted to a device test.
 
 | Module | Implemented and integrated | Verification / remaining gate |
 |---|---|---|
-| 00 Feasibility | Native Settings harness for Gemini response, ElevenLabs playback, RDC discovery/per-install PKCE and device enumeration | Live metadata/DCR checked. Per-install DCR handling and native Keychain tested; real browser consent, token, devices, actions and cellular pending |
+| 00 Feasibility | Native Settings harness for Gemini response, ElevenLabs playback, RDC discovery/per-install PKCE and device enumeration | Live metadata/DCR and native Keychain tested. Owner reports native sign-in/devices; native actions, refresh/revoke and cellular pending |
 | 01 Foundation | Four SwiftUI tabs, Keychain, SQLite, typed task/action contracts, native project/icon | Core storage/policy tests pass. Apple Keychain/UI require Xcode/device. No production mock path; Fixture doubles live only in Tests |
 | 02 Gemini | REST/SSE conversation, complete continuation parts, bounded serial tool loop, error/result correlation | Parser/execution tests pass. User key/model inference pending |
-| 03 Desktop | Explicit selection, live schema/device checks, aliases, file search/read, fixed URL/app/path helpers, actual-resource helper | Policy/encoding/evidence-parser tests pass. Real service output shapes and Windows operations remain unverified |
+| 03 Desktop | Explicit selection, live schema/device checks, aliases, file search/read, fixed URL/app/path helpers, actual-resource helper | Policy/encoding/evidence-parser tests pass. Observed helper discovery/capabilities/resource output PASS through separate RDC connector; native phone command acceptance remains pending |
 | 04 Voice | Replaceable TranscriptionProvider, Apple finalized captions, streamed ElevenLabs PCM, stop/replay/mute, independent cancellation, routing/interruption handlers | 64 core and nine native iOS audio tests pass. Physical permissions, speaker/headset and private-key synthesis pending |
 | 05 Research/memory | Separate Google-grounded research tool, sources/support markers/rendered attribution, editable memories, per-device aliases | Citation/UTF-8 tests pass; actual grounding and UI attribution acceptance pending |
 | 06 Recovery | Transactional claims, no duplicate dispatch/replay, persisted unknown outcomes, saved-call reconciliation on resume, per-install refresh/revocation adapter and reported usage limits | Recovery/cancellation/duplicate/refresh fixtures pass. Native suspension/token/server-revocation tests pending |
-| 07 Release | Xcode configuration, actual-build-only unsigned packaging script, SideStore/PC startup instructions and acceptance checklist | Mac arm64 Release build, 81 core + 11 native tests, verified 0.1.4 unsigned IPA PASS; SideStore signing/install and real-device acceptance pending |
+| 07 Release | Xcode configuration, actual-build-only unsigned packaging script, SideStore/PC startup instructions and acceptance checklist | Mac arm64 Release build, 94 core + 11 native tests, verified 0.1.5 unsigned IPA PASS; SideStore signing/install and real-device acceptance pending |
 
 All modules use the same app, contracts and persistence. The first vertical slice passes only with deterministic fixtures: text → model tool → validation → persisted action → fixture RDC executor → correlated model response. Real YouTube launch is still pending Module 00. Voice is integrated behind that same execution boundary, not evidence that the live slice passed.
 
@@ -360,18 +361,18 @@ All modules use the same app, contracts and persistence. The first vertical slic
 
 1. User's Gemini API key and available model (enter in native Settings; never paste into handoff/source/logs).
 2. ElevenLabs key and accessible Voice ID are stored on the owner's phone and 0.1.2 metadata success is reported. They are unavailable in this build environment; Live private-key speech acceptance remains an owner-side check. No target voice was created here.
-3. Owner completion of Black_Box browser sign-in, exact callback/token exchange and independent device listing; then real refresh/revocation/action acceptance. Public-only provisioning is no longer a prerequisite for 0.1.4.
-4. Actual selected Windows PC/agent online after this app's own OAuth consent; helper path and per-device folder aliases; actual Windows, PowerShell, Node and RDC versions.
-5. User-side SideStore update to 0.1.4, RDC browser authorization and selected-PC/helper acceptance. Native compilation, audio and Keychain execution are complete.
+3. Owner reports Black_Box native browser sign-in and selected-PC listing work on 0.1.4. Native refresh, server revocation, command and cellular acceptance remain pending.
+4. Windows 10 / PowerShell 5.1 helper installed and checked through the separate connector. Native helper proof and per-device folder aliases still need owner phone acceptance. Exact Node/agent package versions remain unrecorded.
+5. User-side SideStore update to 0.1.5 and a fresh selected-PC command. Native compilation, core/audio/Keychain execution and package integrity checks are complete.
 
 ## Next concrete step
 
-Install 0.1.4 through SideStore over the existing app. Settings → Independent
-RDC sign-in: leave the optional client ID blank, then Sign in with PKCE. Complete
-the browser approval using the account paired to the PC. Computer → Refresh
-paired devices, select the intended online PC, then configure and Check installed
-helper under Settings. The helper script is Desktop/BlackBoxHelper.ps1 in this
-repository. Add per-device named folders before file operations. Test one simple
-observed action (such as Open YouTube) and record the actual result. If a provider
-or callback failure remains, capture its exact sanitized stage/message, never
-a code, token or credential. Do not claim independent PC control before it runs.
+Install 0.1.5 through SideStore over the existing app. Keep the paired Windows
+PC and RDC agent online. In Computer, select the intended PC and wait for PC
+ready; the standard helper is already installed on the current selected PC.
+If needed use Find and check helper. A blank helper path discovers the standard
+LocalAppData installation. Send a fresh request such as "Measure my current RAM
+usage," then confirm Activity contains inspect_resources and a real timestamped
+result. Background/reopen and repeat one fresh measurement; old requests must
+never replay. Add per-device named folders before file operations. Report the
+exact bounded stage/message for any remaining failure, never tokens or keys.

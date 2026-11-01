@@ -1,5 +1,32 @@
 # Verified results — 2026-11-01
 
+## Native 0.1.5 desktop command readiness — PASS; native PC command pending
+
+- Exact source `5daf301fee080a8c0b491a2eca12cf6e45cb34ee`; successful run
+  https://github.com/Kbryce0902/black-box-ios/actions/runs/41337372895, job 124939938480.
+- macOS 15.8.2 arm64, Xcode 26.3 (17C529), Swift 6.2.4, iOS SDK 26.2.
+- **94 core + 11 native iOS tests; zero failures.** Thirteen new desktop
+  regressions cover default discovery, real observed output wrapping, strict
+  capabilities, device/schema binding, configured paths, redaction, coalescing,
+  deadlines, stale-reply isolation, retry, current tools/readiness context,
+  pinned resource dispatch and accurate no-tool task completion.
+- Real arm64 device Release compile/package PASS; all nine native audio and two
+  Keychain tests PASS. Literal excerpts: [desktop-0.1.5.log](desktop-0.1.5.log).
+- `BlackBox-0.1.5-unsigned.ipa`: 940422 bytes, version 0.1.5/build 6,
+  com.kellen.blackbox, minimum iOS 17.0; SHA-256 `92f951540b4046985291b5f11806ab6f71d9b67e1866d15ebe273643c1490fe9`.
+- Artifact 13095659846 ZIP digest `20610c73d2b5ab2c070006c1f7167eddbf3015f9039b4f2daeb0b7fc2699882c` matched on download, as did the
+  enclosed IPA checksum. Version/build/bundle, ZIP integrity, executable mode,
+  arm64 Mach-O and physical iOS platform checks also passed independently.
+- On the owner's selected Windows PC, the reviewed helper was installed in a
+  new user-owned standard folder, its SHA-256 verified, and real capabilities,
+  default-path discovery and inspect_resources results observed through the
+  separate RDC connector. Windows 10.0.19045.0 / PowerShell 5.1.19041.6456.
+  Sanitized scope/environment: [desktop-helper-0.1.5.json](desktop-helper-0.1.5.json).
+- The owner reports 0.1.4 native RDC sign-in works. These connector checks are
+  separate from native 0.1.5 command acceptance, which remains pending. No
+  user's Gemini key, new synthesis request, native phone action, new Linux Swift
+  run, startup/service/firewall or global execution-policy change occurred.
+
 ## Native 0.1.4 RDC compatibility — compiled/tested; live grant pending
 
 - Exact source `4c82946be94d49852ffba85b732f92f5b5e96144`; successful run

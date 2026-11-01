@@ -2,14 +2,14 @@
 
 Black_Box is implemented as one native SwiftUI app and a reusable Swift core. It calls Gemini, ElevenLabs and the existing RDC hosted MCP service directly. There is no custom backend, local language model or consumer-app dependency.
 
-**Status: 0.1.5 desktop-readiness fix prepared; Mac build pending.** The owner
-reports that 0.1.4 signs in to RDC and shows the selected PC online, but Gemini
-still claims it has no execution tools. The app hid those tools until a helper
-check, then cleared that check on backgrounding without restoring it. 0.1.5
-finds the standard helper, checks it automatically, and passes actual readiness
-to Gemini. The reviewed helper now passes capabilities and a read-only resource
-measurement on Windows through the separate RDC connector. Phone-to-PC command
-acceptance of this release remains pending. See [HANDOFF.md](HANDOFF.md) and
+**Status: compiled 0.1.5 development IPA for SideStore.** All 94 core and 11
+native iOS tests passed on Xcode 26.3 / iOS 26.2; downloaded checksums, arm64
+binary and package structure were verified. 0.1.5 fixes the connected-PC/no-tools
+bug by finding and checking the Windows helper before desktop tool selection,
+rechecking after foregrounding, and showing actual command readiness. The helper
+also passed capabilities, standard-path discovery and a read-only resource
+measurement on Windows through the separate RDC connector. Native 0.1.5
+phone-to-PC command acceptance remains pending. See [HANDOFF.md](HANDOFF.md) and
 [Verification/RESULTS.md](Verification/RESULTS.md).
 
 ## Start here
@@ -22,7 +22,7 @@ acceptance of this release remains pending. See [HANDOFF.md](HANDOFF.md) and
 
 The [GitHub Actions build](docs/CLOUD_BUILD.md) runs in the dedicated public
 [black-box-ios repository](https://github.com/Kbryce0902/black-box-ios).
-The verified build is [run 41331459253](https://github.com/Kbryce0902/black-box-ios/actions/runs/41331459253).
+The verified build is [run 41337372895](https://github.com/Kbryce0902/black-box-ios/actions/runs/41337372895).
 
 ## Included implementation
 

@@ -2,7 +2,7 @@
 
 Checked 2026-11-01. This is evidence of documentation and unauthenticated discovery, not an authenticated native acceptance result.
 
-## RDC: per-install compatibility implemented in 0.1.4; live grant pending
+## RDC: native sign-in reported; 0.1.5 desktop readiness repair
 
 Official endpoint: `https://mcp.desktopcommander.app/mcp` (Streamable HTTP).
 The app discovers its resource origin and requires external browser sign-in,
@@ -26,8 +26,9 @@ from an already connected account. Legacy public grants migrate without new keys
 Current public metadata and one live, unauthenticated registration were checked
 on 2026-11-01. Only whitelisted noncredential results are preserved in
 Verification/rdc-compatibility-0.1.4.json. Authorize and an invalid-code token probe
-returned HTTP 403 from this execution environment. No user code/access token or
-independent Black_Box device action was obtained. A working existing ChatGPT
+returned HTTP 403 from this execution environment. No user code/access token or independent Black_Box device action was obtained
+by that unauthenticated build-environment probe. The owner now reports that
+0.1.4 completes native RDC sign-in and shows the selected PC online. A working existing ChatGPT
 connection and an online PC are not proof of Black_Box's own grant.
 
 RDC's observed list_devices text output now has a strict UUID/status adapter in
@@ -35,8 +36,13 @@ addition to structured JSON. Ambiguous records are rejected. Selection, capabili
 handshake and actual helper action acceptance remain separate steps.
 
 No cloud backend, alternate provider, account-permission change or billing change
-has been substituted. The next live check is Settings → Sign in with PKCE on the
-owner's phone, then Computer → Refresh paired devices and select the computer.
+has been substituted. The next live check is a 0.1.5 phone request after PC ready. The earlier app
+cleared helper proof on suspension, never restored it on foregrounding and
+froze the tool list before checking. 0.1.5 discovers the standard helper and
+performs a bounded check before tool selection. Versioned capabilities,
+standard-path discovery and inspect_resources have separately passed on Windows
+10 / PowerShell 5.1 through the connected RDC tool route. Those checks do not
+substitute for the native phone's own grant and command result.
 
 Standards and primary implementation references:
 - https://www.rfc-editor.org/rfc/rfc8252.html#section-8.4
@@ -60,7 +66,7 @@ The native deployment floor is iOS 17 because the app uses iOS 17 SwiftUI APIs. 
 Actual compilation uses a public GitHub Mac runner: Xcode 26.3, Swift 6.2.4 and
 iOS 26.2 on macOS 15.8.2, with native simulator execution. This workspace has no
 connected iPhone or physical-device signing identity. The owner reports prior
-SideStore installs and 0.1.3 mostly working; 0.1.4 physical acceptance is pending.
+SideStore installs and 0.1.3 mostly working; 0.1.4 native RDC sign-in is reported working; 0.1.5 PC command acceptance is pending.
 The native harness can report hw.machine and the actual OS/build; an inferred
 marketing name is not hardware verification. See HANDOFF.md for exact evidence.
 
