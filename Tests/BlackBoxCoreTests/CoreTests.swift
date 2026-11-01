@@ -18,9 +18,12 @@ actor FixtureHTTP: HTTPClient {
 actor ScriptedModel: ReasoningClient {
     var replies: [ModelReply]
     var histories: [[JSONValue]] = []
+    var systems: [String] = []
+    var toolLists: [[JSONValue]] = []
     init(_ replies: [ModelReply]) { self.replies = replies }
     func generate(history: [JSONValue], system: String, tools: [JSONValue], grounded: Bool, onText: @escaping @Sendable (String) async -> Void) async throws -> ModelReply {
-        histories.append(history); guard !replies.isEmpty else { throw BBError.wire("Fixture exhausted") }; return replies.removeFirst()
+        histories.append(history); systems.append(system); toolLists.append(tools)
+        guard !replies.isEmpty else { throw BBError.wire("Fixture exhausted") }; return replies.removeFirst()
     }
 }
 @MainActor final class FixtureExecutor: ToolExecutor {

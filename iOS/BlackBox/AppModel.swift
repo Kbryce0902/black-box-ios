@@ -17,7 +17,7 @@ import BlackBoxCore
     @Published var error: String?
     @Published var geminiState = GeminiValidationSnapshot()
     @Published var voiceState = ElevenValidationSnapshot()
-    @Published var helperStatus = "Desktop helpers unverified"
+    @Published var helperState = DesktopHelperSnapshot()
     @Published var checks: [String] = []
     @Published var reviewTool: ValidatedTool?
     @Published var hasGeminiKey = false
@@ -28,13 +28,25 @@ import BlackBoxCore
     private let vault = KeychainStore()
     private let geminiValidation = GeminiValidationController()
     private let elevenValidation = ElevenValidationController()
+    private let helper = DesktopHelperController()
     private var running: Task<Void, Never>?
     private var activeID: String?
     private var reviewContinuation: CheckedContinuation<Bool, Never>?
-    private var verifiedHelperDevice: String?
-    private var verifiedHelperPath: String?
+    private var foreground = false
+    private var foregroundEpoch = UUID()
     var selected: PCDevice? { rdc.devices.first { $0.id == settings.selectedDeviceID } }
-    var helperVerified: Bool { selected?.online == true && verifiedHelperDevice == settings.selectedDeviceID && verifiedHelperPath == settings.helperPath }
+    var helperVerified: Bool {
+        foreground && rdc.signedIn && selected?.online == true && helperState.phase == .ready &&
+        helperState.deviceID == settings.selectedDeviceID && helperState.path == settings.helperPath.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+    var helperChecking: Bool { helperState.phase == .checking }
+    var helperStatus: String {
+        guard rdc.signedIn else { return "Sign in to RDC to connect your PC." }
+        guard let selected else { return "Select a PC in Computer, then check the Windows helper." }
+        guard selected.online else { return "Selected PC is offline. Keep its RDC agent running." }
+        return helperState.message
+    }
+    var pcStatus: String { helperVerified ? "PC ready" : helperChecking ? "Checking PC" : selected?.online == true ? "PC setup" : "PC unavailable" }
     var hardwareIdentifier: String {
         var size = 0
         guard sysctlbyname("hw.machine", nil, &size, nil, 0) == 0 else { return "unavailable" }
@@ -61,6 +73,14 @@ import BlackBoxCore
         if hasGeminiKey { geminiValidation.keyStored() }
         elevenValidation.onChange = { [weak self] in self?.voiceState = $0 }
         if hasVoiceKey { elevenValidation.keyStored() }
+        helper.onChange = { [weak self] state in
+            guard let self else { return }
+            self.helperState = state
+            if state.phase == .ready, self.foreground, state.deviceID == self.settings.selectedDeviceID {
+                self.settings.helperPath = state.path
+                do { try self.saveSettings() } catch { self.error = error.localizedDescription }
+            }
+        }
         audio.onFinal = { [weak self] text in
             guard let self, !self.busy else { return }; self.draft = text; self.send()
         }
@@ -141,20 +161,32 @@ import BlackBoxCore
         audio.speak("Black Box online. A promising start.", client: try voice())
         recordCheck("STARTED · ElevenLabs playback test. Confirm audible output on the device.")
     }
-    func select(_ id: String?) throws { guard !busy else { throw BBError.invalid("Cancel or finish the active task before selecting another PC.") }; settings.selectedDeviceID = id; verifiedHelperDevice = nil; try saveSettings() }
+    func select(_ id: String?) throws {
+        guard !busy else { throw BBError.invalid("Cancel or finish the active task before selecting another PC.") }
+        if settings.selectedDeviceID != id { helper.invalidate(); settings.selectedDeviceID = id; try saveSettings() }
+        Task { if settings.selectedDeviceID == id { await checkHelperIfNeeded() } }
+    }
+    func helperPathChanged(_ value: String) {
+        if helperState.phase != .ready || helperState.path != value.trimmingCharacters(in: .whitespacesAndNewlines) { helper.invalidate() }
+        do { try saveSettings() } catch { self.error = error.localizedDescription }
+    }
+    func devicePresenceChanged() {
+        if selected?.online != true { helper.invalidate() }
+    }
+    func checkHelperIfNeeded() async {
+        guard foreground, rdc.signedIn, selected?.online == true, !helperVerified else { return }
+        do { try await verifyHelper() } catch { /* Inline status carries setup failures; public chat remains available. */ }
+    }
     func verifyHelper() async throws {
+        guard foreground else { throw CancellationError() }
         guard let device = selected, device.online else { throw BBError.setup("Select an online PC first.") }
-        let command = try HelperCommand.make(path: settings.helperPath, operation: "capabilities", arguments: [:], roots: [])
-        let token = try await rdc.accessToken()
-        guard rdc.tools.contains(where: { $0["name"].string == "start_process" && $0["inputSchema"]["properties"]["deviceId"].object != nil }) else { throw BBError.setup("Live RDC start_process schema is not verified.") }
-        let raw = try await rdc.mcp.call("start_process", arguments: ["deviceId": .string(device.id), "command": .string(command), "shell": "powershell.exe", "timeout_ms": 3000], token: token)
-        let payload = try MCPClient.payload(raw)
-        // Only the exact versioned marker enables helpers. No model or UI assertion can bypass it.
-        guard let evidence = HelperEvidence.parse(payload, operation: "capabilities"), evidence["ok"].bool == true,
-              evidence["os"].string == "Windows", evidence["runtime"].string?.hasPrefix("PowerShell") == true else { throw BBError.setup("Helper handshake not observed; inspect RDC setup and helper path. Helpers remain disabled.") }
-        verifiedHelperDevice = device.id; verifiedHelperPath = settings.helperPath
-        helperStatus = "Handshake verified for \(device.name) · real actions still need acceptance tests"
-        recordCheck("PASS · Helper capability handshake on selected device. No launch/media/file mutation tested by this probe.")
+        let path = settings.helperPath, epoch = foregroundEpoch
+        _ = try await helper.check(deviceID: device.id, path: path) { [rdc] in
+            let token = try await rdc.accessToken()
+            return try await DesktopHelperProbe.check(deviceID: device.id, path: path, tools: rdc.tools, mcp: rdc.mcp, token: token)
+        }
+        try Task.checkCancellation()
+        guard foreground, epoch == foregroundEpoch, settings.selectedDeviceID == device.id, helperVerified else { throw CancellationError() }
     }
     func send() {
         let text = draft.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -165,12 +197,16 @@ import BlackBoxCore
             let model = try gemini()
             let task = try store.commit(input: text, deviceID: settings.selectedDeviceID)
             draft = ""; streamingText = ""; busy = true; activeID = task.id; audio.stopSpeech(); try reload()
-            let policy = ToolPolicy(device: selected, aliases: aliases, helperVerified: helperVerified)
-            let executor = DesktopExecutor(mcp: rdc.mcp, token: { [rdc] in try await rdc.accessToken() }, research: model, tools: rdc.tools, helperPath: settings.helperPath, aliases: aliases)
-            let engine = ConversationEngine(store: store, model: model, executor: executor, policy: policy, settings: settings)
             running = Task {
                 defer { busy = false; activeID = nil; running = nil; streamingText = "" }
                 do {
+                    await checkHelperIfNeeded()
+                    try Task.checkCancellation()
+                    guard foreground, settings.selectedDeviceID == task.deviceID else { throw CancellationError() }
+                    // Freeze declarations only after the read-only connection check finishes.
+                    let policy = ToolPolicy(device: selected, aliases: aliases, helperVerified: helperVerified)
+                    let executor = DesktopExecutor(mcp: rdc.mcp, token: { [rdc] in try await rdc.accessToken() }, research: model, tools: rdc.tools, helperPath: settings.helperPath, aliases: aliases)
+                    let engine = ConversationEngine(store: store, model: model, executor: executor, policy: policy, settings: settings, connectionStatus: helperStatus)
                     let reply = try await engine.run(taskID: task.id, onText: { [weak self] chunk in
                         await MainActor.run { self?.streamingText += chunk }
                     }, onChange: { [weak self] in do { try self?.reload() } catch { self?.error = error.localizedDescription } }, review: { [weak self] tool in
@@ -186,13 +222,22 @@ import BlackBoxCore
     func cancelTask() {
         if let activeID { do { try repository?.cancel(activeID); try reload() } catch { self.error = error.localizedDescription } }
         confirmReview(false); running?.cancel(); audio.cancelCapture()
+        if helperChecking { helper.invalidate("Windows helper check canceled. Check again to enable desktop commands.") }
     }
-    func suspend() { cancelTask(); geminiValidation.cancel(); elevenValidation.cancel(); audio.interrupt(); verifiedHelperDevice = nil }
+    func suspend() {
+        foreground = false; foregroundEpoch = UUID(); helper.invalidate()
+        cancelTask(); geminiValidation.cancel(); elevenValidation.cancel(); audio.interrupt()
+    }
     func resume() async {
+        foreground = true; let epoch = foregroundEpoch
         do {
             if !busy { try repository?.recover(); try reload() }
             if rdc.signedIn {
                 try await rdc.refreshDevices()
+                guard foreground, epoch == foregroundEpoch else { return }
+                devicePresenceChanged()
+                await checkHelperIfNeeded()
+                guard foreground, epoch == foregroundEpoch else { return }
                 // Read existing call IDs only. Never redispatch an interrupted operation.
                 if !busy {
                     for action in actions.filter({ $0.state == .unknown && $0.remoteCallID != nil }).prefix(10) {

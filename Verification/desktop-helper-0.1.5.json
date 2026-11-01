@@ -1,0 +1,18 @@
+{
+  "scope": "Separate connected RDC route; not proof of native phone-to-PC command execution",
+  "helper": {
+    "bytes": 8500,
+    "sha256": "06ccf3f57b929be85f5a7aaa1c77dd7060283af1f31119d3a7b948e984df429d",
+    "marker": "BLACKBOX_HELPER_V1",
+    "capabilities": "passed",
+    "standard_path_discovery": "passed",
+    "inspect_resources": "passed; actual measurement and process list omitted"
+  },
+  "observed_environment": {
+    "windows": "10.0.19045.0",
+    "powershell": "5.1.19041.6456",
+    "rdc_configuration_version": "0.3.1"
+  },
+  "privileged_or_persistent_changes": false,
+  "native_0_1_5_acceptance": "pending"
+}

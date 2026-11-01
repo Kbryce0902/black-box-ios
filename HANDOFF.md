@@ -1,5 +1,38 @@
 # Black_Box implementation handoff
 
+## Active repair — 0.1.5 desktop command readiness (Mac build pending)
+
+Owner now reports successful 0.1.4 native RDC login and PC-online status, but
+Gemini claims it has no execution tools/network/shell and suggests port 3389.
+Confirmed source defects: ToolPolicy hides desktop tools until helper proof;
+helperPath defaults blank; suspend clears proof; resume never rechecks; send
+froze declarations before any handshake. No native app-to-PC action success is
+inferred from login or from the separate connected tool route.
+
+Completed on the owner's explicitly selected online Windows PC through the RDC
+connector: created a new user-owned LocalAppData/BlackBox-iOS folder, copied the
+reviewed 8500-byte helper without overwriting, verified SHA-256
+06ccf3f57b929be85f5a7aaa1c77dd7060283af1f31119d3a7b948e984df429d,
+and received real versioned capabilities plus inspect_resources output.
+Windows 10.0.19045.0, PowerShell 5.1.19041.6456, RDC config version 0.3.1.
+The new fixed default-discovery command also returned the installed path and
+complete capabilities. No elevation, service/startup/firewall, global execution
+policy, new grant, or RDP configuration was changed. Do not put the real user's
+path, PC ID, process list or credentials in this public repository.
+
+Prepared 0.1.5/build 6: fixed read-only helper discovery; coalesced 25-second
+checks with stale-response/cancellation isolation; recheck on foreground/PC
+selection and before freezing request tools; persist discovered paths; distinct
+PC ready/setup/checking states; precise current-tool/readiness prompt and RDP
+correction; accurate no-tool task completion detail. Original allowlists,
+per-device roots, action claims/review and unknown-outcome behavior remain.
+Tests added for transport/device binding, capability evidence, wrapper parsing,
+deadlines, coalescing, invalidation, retry and prompt-to-dispatch behavior.
+No new Mac test/build pass is claimed yet. Next: run the public Mac workflow,
+inspect tests/device compilation, verify downloaded IPA, update the existing
+artifact and deliver the installed-over-same-app instructions. Current released
+artifact below is still 0.1.4 until this new build passes.
+
 Updated 2026-11-01. Source version **0.1.4 development**. Continue this repository;
 do not restart from a proposal.
 

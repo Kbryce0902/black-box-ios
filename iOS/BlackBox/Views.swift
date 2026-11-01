@@ -14,6 +14,10 @@ struct RootView: View {
             ActivityView(m: model).tabItem { Label("Activity", systemImage: "waveform.path") }
             SettingsView(m: model, rdc: rdc, audio: audio).tabItem { Label("Settings", systemImage: "slider.horizontal.3") }
         }
+        .onChange(of: rdc.devices) { _, _ in
+            model.devicePresenceChanged()
+            Task { await model.checkHelperIfNeeded() }
+        }
         .alert("Black_Box", isPresented: Binding(get: { model.error != nil }, set: { if !$0 { model.error = nil } })) {
             Button("OK") { model.error = nil }
         } message: { Text(model.error ?? "") }
@@ -47,9 +51,12 @@ struct ConversationView: View {
                         Text(m.busy ? "Working" : audio.speaking ? "Speaking" : audio.listening ? "Listening" : "Ready for a request").font(.caption).foregroundStyle(.secondary)
                     }
                     Spacer()
-                    Circle().fill(m.selected?.online == true ? Color.green : Color.gray).frame(width: 7, height: 7)
-                    Text(m.selected?.online == true ? "PC online" : "PC unavailable").font(.caption2).foregroundStyle(.secondary)
+                    Circle().fill(m.helperVerified ? Color.green : m.selected?.online == true ? Color.orange : Color.gray).frame(width: 7, height: 7)
+                    Text(m.pcStatus).font(.caption2).foregroundStyle(.secondary)
                 }.padding().background(Color.blue.opacity(0.055))
+                if m.selected?.online == true, !m.helperVerified {
+                    Text(m.helperStatus).font(.caption).foregroundStyle(.secondary).frame(maxWidth: .infinity, alignment: .leading).padding(.horizontal).padding(.vertical, 8)
+                }
                 ScrollViewReader { proxy in
                     ScrollView {
                         LazyVStack(alignment: .leading, spacing: 18) {
@@ -133,11 +140,17 @@ struct ComputerView: View {
                     }
                     if rdc.devices.isEmpty { Text("No device selection has been verified.").foregroundStyle(.secondary) }
                 }
+                Section("Desktop commands") {
+                    if m.helperChecking { ProgressView("Checking desktop commands…") }
+                    Text(m.helperStatus).font(.callout).foregroundStyle(m.helperState.phase == .failed ? Color.orange : Color.secondary)
+                        .textSelection(.enabled).accessibilityIdentifier("desktop.helper.status")
+                    Button("Find and check helper") { m.perform { try await m.verifyHelper() } }
+                        .disabled(m.busy || m.helperChecking || m.selected?.online != true)
+                }
                 Section("Common actions") {
                     Button("Open YouTube") { m.draft = "Open https://www.youtube.com on my selected desktop. Report only what is observed."; m.send() }
                     Button("What's using my RAM?") { m.draft = "Measure current RAM use on my selected desktop. Include measurement time, units and top processes."; m.send() }
                     Button("Pause media") { m.draft = "Send the pause media command on my selected desktop."; m.send() }
-                    Text(m.helperStatus).font(.caption).foregroundStyle(.secondary)
                 }.disabled(m.busy || !m.helperVerified)
                 Section("Named folders for selected PC") {
                     ForEach(m.aliases.filter { $0.deviceID == m.settings.selectedDeviceID }) { alias in
@@ -284,8 +297,12 @@ struct SettingsView: View {
                 }
                 Section("Windows helper") {
                     TextField("Full path to BlackBoxHelper.ps1", text: $m.settings.helperPath).textInputAutocapitalization(.never).autocorrectionDisabled()
-                    Button("Check installed helper") { m.perform { try await m.verifyHelper() } }
-                    Text(m.helperStatus).font(.caption).foregroundStyle(.secondary)
+                        .onChange(of: m.settings.helperPath) { _, value in m.helperPathChanged(value) }
+                    Text("Leave the path blank to find the helper in its standard installation folder. The app checks it again when returning to the foreground.").font(.caption).foregroundStyle(.secondary)
+                    if m.helperChecking { ProgressView("Checking desktop commands…") }
+                    Button("Find and check helper") { m.perform { try await m.verifyHelper() } }
+                        .disabled(m.helperChecking || m.selected?.online != true)
+                    Text(m.helperStatus).font(.callout).foregroundStyle(m.helperState.phase == .failed ? Color.orange : Color.secondary).textSelection(.enabled)
                 }
                 Section("Local memory") {
                     ForEach(m.memories) { memory in Button { editingMemory = memory } label: { Text(memory.text).foregroundStyle(.primary).lineLimit(3) } }
