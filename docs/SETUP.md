@@ -33,7 +33,7 @@ To build an unsigned device artifact for SideStore:
 Scripts/build-ios.sh unsigned
 ```
 
-Only after `xcodebuild` successfully produces a real `iphoneos` app does the script package `build/BlackBox-0.1.2-unsigned.ipa`. It is unsigned and must be re-signed; it is not an App Store archive or a claim of successful installation. The script exits explicitly on Linux and never fabricates an IPA.
+Only after `xcodebuild` successfully produces a real `iphoneos` app does the script package `build/BlackBox-0.1.3-unsigned.ipa`. It is unsigned and must be re-signed; it is not an App Store archive or a claim of successful installation. The script exits explicitly on Linux and never fabricates an IPA.
 
 For a direct Xcode install, choose your signing team and a bundle ID provisioned for that account. No development team, signing certificate or provisioning profile is supplied. Keep the callback URL scheme `com.kellen.blackbox` registered even if re-signing changes the app bundle identifier.
 
@@ -47,6 +47,15 @@ If SideStore changes the bundle identifier, verify independent Keychain storage 
 
 ## App provider setup
 
+0.1.3 fixes iPhone playback setup and binary PCM buffering. After updating,
+use **Test device audio (no API usage)** first; the local tone exercises the same
+session/decoder/player as speech. Settings shows the selected **Output** route.
+Then use **Test voice (uses API quota)** to exercise actual ElevenLabs synthesis.
+Errors identify whether native setup/activation/engine, provider request/stream,
+audio decoding or rendering failed. Stop/interruption cancels old playback; no
+speech request is silently retried. Keep the phone's media volume audible and
+check the displayed route if a connected headset receives the audio.
+
 0.1.2 changes ElevenLabs setup: voice/model edits autosave; known display labels
 normalize to exact IDs (ElevenV4 becomes eleven_v4). Use Check voice and model to
 load the returned TTS model choices and verify the Voice ID. The native check has
@@ -58,7 +67,7 @@ permissions you intend to use; no permissions are changed by this app.
 
 Before updating from an earlier version, use Save configuration to preserve any
 voice/model entries still only on screen. Install over the same app through
-SideStore; 0.1.2 keeps the same bundle, Keychain and SQLite identities.
+SideStore; 0.1.3 keeps the same bundle, Keychain and SQLite identities.
 
 
 0.1.1 changes Gemini setup: **Save and check key** stores it securely and starts

@@ -63,3 +63,8 @@ The Linux SwiftPM test launcher intermittently crashes in this execution host wh
   stop/interruption/replacement generations. Label the failing native stage.
 - Add a local tone and native simulator tests to exercise the path that portable
   metadata/request tests cannot cover. No hidden inference call or fallback.
+
+- 0.1.3 final run 41317287989 passed 64 core and nine native iOS audio tests,
+  compiled and verified the device IPA. The legacy Bluetooth option probe was
+  accepted in the simulator, so the owner's exact physical -50 was not
+  reproduced. Keep real phone speech/output-route acceptance pending.

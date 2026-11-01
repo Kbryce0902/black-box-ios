@@ -14,7 +14,10 @@ In Black_Box:
    Eleven v4's API ID is `eleven_v4`; known display labels normalize automatically.
    A restricted key needs read permission for metadata and Text to Speech for
    playback; Test voice can run independently of a failed read-permission check.
-4. Listen over the phone speaker and your Bluetooth/headset route. Evaluate the exact voice, pronunciation and delivery before relying on it.
+4. In 0.1.3, Test device audio (no API usage) plays a local tone through the same
+   native playback path. Check the Output route shown beside the result. A local
+   tone proves no provider access; the separate Test voice checks synthesis.
+5. Listen over the phone speaker and your Bluetooth/headset route. Evaluate the exact voice, pronunciation and delivery before relying on it.
 
 The text persona is concise, confident and dry. Vocal identity comes from the selected authorized ElevenLabs voice, not a claim that the text prompt reproduces an actor's timbre.
 

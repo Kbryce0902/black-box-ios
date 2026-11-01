@@ -2,27 +2,33 @@
 
 Black_Box is implemented as one native SwiftUI app and a reusable Swift core. It calls Gemini, ElevenLabs and the existing RDC hosted MCP service directly. There is no custom backend, local language model or consumer-app dependency.
 
-**Status: compiled 0.1.2 development IPA for SideStore.** Xcode 26.3 built the arm64
-iphoneos Release target using the iOS 26.2 SDK; 64 Mac core tests passed.
-`BlackBox-0.1.2-unsigned.ipa` was retrieved and its checksum/structure verified.
-SideStore must sign it for the phone. The owner reports 0.1.0 installed and runs;
-0.1.2 real-device acceptance, provider calls and
-RDC desktop integration remain unverified. See [HANDOFF.md](HANDOFF.md) and
+**Status: compiled 0.1.3 development IPA for SideStore.** Xcode 26.3 built the arm64
+iphoneos Release target using iOS 26.2. All 64 core and nine native iOS audio tests
+passed; the downloaded IPA's checksum/structure was verified. SideStore must
+sign it for the phone. The owner reports 0.1.2 installation and live ElevenLabs
+metadata success, followed by native playback -50. New-version phone speech and
+RDC desktop integration still need acceptance. See [HANDOFF.md](HANDOFF.md) and
 [Verification/RESULTS.md](Verification/RESULTS.md).
 
 ## Start here
 
 1. Read [docs/FEASIBILITY.md](docs/FEASIBILITY.md): RDC's live dynamic registration returned a confidential client despite requesting a public native client. The app rejects that result. An RDC-issued public native client registration is the smallest supported next step. Do not embed a client secret or reuse another app's token.
 2. On a suitable Mac, open `BlackBox.xcodeproj`. The app uses the local package in `Package.swift` and Apple system frameworks only. Select the BlackBox scheme and your iPhone.
-3. Run `Scripts/test-core.sh` and `Scripts/build-ios.sh simulator`. For SideStore, after a successful device build run `Scripts/build-ios.sh unsigned`. This creates an unsigned IPA only when a real Apple SDK build succeeds.
+3. Run `Scripts/test-core.sh`, `Scripts/test-ios-audio.sh` and `Scripts/build-ios.sh simulator`. For SideStore, after a successful device build run `Scripts/build-ios.sh unsigned`. This creates an unsigned IPA only when a real Apple SDK build succeeds.
 4. Follow [docs/SETUP.md](docs/SETUP.md), enter your keys in the app's secure Settings fields, then run the native feasibility harness. Keys never belong in source, chat or build logs.
 5. Finish the real-device checklist in [docs/ACCEPTANCE.md](docs/ACCEPTANCE.md). A simulated tool loop is not proof of phone-to-PC control.
 
 The [GitHub Actions build](docs/CLOUD_BUILD.md) runs in the dedicated public
 [black-box-ios repository](https://github.com/Kbryce0902/black-box-ios).
-The verified build is [run 41297291686](https://github.com/Kbryce0902/black-box-ios/actions/runs/41297291686).
+The verified build is [run 41317287989](https://github.com/Kbryce0902/black-box-ios/actions/runs/41317287989).
 
 ## Included implementation
+
+- 0.1.3 repairs native speech output: valid playback session options, microphone
+  cancellation before output, a fresh graph after activation, binary PCM packets,
+  bounded queued audio and stage-specific errors. Settings shows the output route
+  and a Test device audio control that uses no provider quota. CI now includes
+  nine hosted iOS audio tests in addition to the 64 portable core checks.
 
 - 0.1.2 fixes ElevenLabs setup and speech: documented model IDs/display-name
   normalization, returned TTS model picker, bounded metadata checks, redacted
@@ -49,6 +55,7 @@ The verified build is [run 41297291686](https://github.com/Kbryce0902/black-box-
 |---|---|
 | `iOS/BlackBox` | Native UI, Keychain, OAuth browser session, microphone and audio playback |
 | `Sources/BlackBoxCore` | Provider clients, policy, durable journal, tool execution and wire parsing |
+| `iOS/BlackBoxTests` | Real iOS session/player tests with deterministic local PCM, no provider calls |
 | `Tests/BlackBoxCoreTests` | Deterministic protocol and execution tests; all doubles labeled Fixture |
 | `Desktop` | Windows PowerShell helper and opt-in desktop acceptance script |
 | `Scripts` | Local core tests, real Apple builds and public metadata probe |

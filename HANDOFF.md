@@ -3,47 +3,50 @@
 Updated 2026-11-01. Source version **0.1.3 development**. Continue this repository;
 do not restart from a proposal.
 
-## Native speech playback fix — 0.1.3 (verification in progress)
+## Native speech playback repair — 0.1.3
 
-The owner installed 0.1.2. ElevenLabs metadata now succeeds for the chosen voice
-and eleven_v4, but Test voice displays OSStatus -50 and no audio. The screenshot
-contains no live API key. Do not copy its private Voice ID into source/tests.
+The owner installed 0.1.2. ElevenLabs metadata succeeds for the selected voice
+and eleven_v4, but Test voice displays OSStatus -50 with no speech. The screenshot
+contains no live API key. Its private Voice ID was not copied into source/tests.
+The old controller reported a generic error across multiple native setup stages,
+so the screenshot alone cannot identify which native call failed.
 
-The old controller set playback + spokenAudio + allowBluetoothA2DP before its
-first synthesis request. Playback already supports A2DP; remove the explicit
-recording-category option. Rebuild the engine graph only after session activation
-so stale microphone/Bluetooth formats are not retained. Cancel microphone capture
-before output. Local setup/activation/engine, provider request/stream, decoding
-and render failures now have distinct stage labels and native error codes.
+Changes implemented and compiled:
+- Playback uses playback/spokenAudio without an explicit Bluetooth flag;
+  playback already routes to A2DP. The engine graph is recreated after session
+  activation instead of keeping a graph built before the active route existed.
+- Microphone capture stops before output. Requesting, playback and failure
+  stages distinguish session setup, activation, engine, provider request/stream,
+  decoding and render failures, including the native error domain/code.
+- ElevenLabs PCM is binary. The HTTP reader no longer treats 0x0a sample bytes
+  as SSE newlines. It emits 2048-byte packets plus a final tail.
+- An eight-buffer runway replaces serial single-buffer draining, with at most
+  1024 frames per buffer. Samples remain 24 kHz mono Float32 decoded from the
+  provider's PCM16; the mixer converts to the hardware route.
+- Stop/interruption releases waits and invalidates old callbacks/requests. Each
+  new request gets a new graph. A stalled render wait has a five-second deadline.
+- Settings has Test device audio (no API usage) through the same decoder/player,
+  and shows the actual output route. Test voice remains an explicit quota-using
+  action. No alternate voice provider or automatic retry was introduced.
+- 0.1.3/build 4 preserves bundle ID, Keychain, SQLite and configured providers.
 
-The generic HTTP reader also flushed raw PCM on every 0x0a byte. Audio is binary,
-so ElevenLabs now emits full 2048-byte packets (plus a final tail). A bounded
-8-buffer playback runway replaces one-buffer-at-a-time waiting; buffers remain
-24 kHz mono Float32 decoded from provider PCM16, and the mixer converts to the
-active output route. Stop/interruption releases waiters, rejects stale callbacks
-and permits a new graph on retry; stalled rendering has a 5-second deadline.
+Verification: all **64 portable core tests** and **nine native iOS audio tests**
+passed in run 41317287989. Xcode 26.3 built the Release arm64 device IPA and ran
+the hosted app/player tests on the arm64 iOS 26.2 simulator. The native tests
+cover real session/engine/buffer completion, a local tone, capture ownership via
+a fixture transcriber, stop/retry, stale requests, provider-vs-native errors,
+empty/truncated/odd PCM and interruption recovery. No real microphone or API key
+was used by these tests. Local plist/YAML/XML/Bash checks pass.
 
-Settings adds Test device audio (no API usage), using a local tone through the
-same PCM/session/player path, plus the actual output route. No alternate speech
-provider or silent fallback is added. The explicit Test voice remains the only
-setup control that can consume ElevenLabs synthesis quota.
+The legacy playback/Bluetooth combination was accepted by this simulator. It did
+**not reproduce the owner's exact physical-device -50**. The repaired native
+path executes successfully here; actual phone playback and Bluetooth routes
+still need owner acceptance. Do not turn simulator success into a live account
+or device success. Literal run excerpts are in Verification/audio-0.1.3.log.
 
-Added a hosted iOS Simulator XCTest target with nine native audio regressions:
-real session/engine/player completion, local tone, capture-to-playback, queued
-stop/retry, late request isolation, provider-vs-native failure, empty/truncated
-PCM, interruption recovery and odd/network/newline PCM boundaries. A legacy
-option probe records whether the simulator reproduces -50; it is not assumed
-identical to physical iOS. Existing 64 core tests are retained.
-
-Version 0.1.3/build 4 retains bundle ID, Keychain, SQLite and provider selections.
-Local plist/YAML/XML/Bash checks pass. Run 41316725723 passed all 64 core tests
-and native arm64 packaging. Its simulator build attempted x86_64 for the app
-while SwiftPM supplied arm64, then failed to import BlackBoxCore. The simulator
-script now selects the host architecture explicitly and sets ONLY_ACTIVE_ARCH.
-A fresh full run is required; no simulator test execution was claimed for that
-failed attempt. Native build and iOS tests for the final source are pending;
-do not claim a compiled IPA or live-key playback until the corresponding result
-is observed. Continue from this checkpoint and update evidence below.
+Official Apple references checked 2026-11-01:
+https://developer.apple.com/documentation/avfaudio/avaudiosession/categoryoptions-swift.struct/allowbluetootha2dp
+https://developer.apple.com/documentation/avfaudio/avaudiosession/mode-swift.struct/spokenaudio
 
 ## ElevenLabs setup/speech fix — 0.1.2
 
@@ -134,34 +137,33 @@ Current release provenance is recorded below.
 
 ## Current outcome
 
-**Native 0.1.2 (build 3) has been compiled, retrieved and preserved for delivery.**
+**Native 0.1.3 (build 4) has been compiled, tested, retrieved and preserved.**
 
 - Repository: https://github.com/Kbryce0902/black-box-ios (owner-authorized public
   repository containing only this project).
-- Exact compiled source: `93af30d7d00bf4abc4c6eb959ca92ec64494b636`.
-- Successful run: https://github.com/Kbryce0902/black-box-ios/actions/runs/41297291686
-  (job 124820695436; all workflow steps succeeded).
-- macOS 15.8.2 arm64, Xcode 26.3 (17C529), Apple Swift 6.2.4, iOS 26.2 SDK;
-  Release arm64 iphoneos, minimum iOS 17.0.
-- **64 tests passed, 0 failures** on that Mac.
-- `BlackBox-0.1.2-unsigned.ipa`: 852941 bytes, bundle com.kellen.blackbox.
-- IPA SHA-256: `e0a78a247b734ea59cd6b785b72a202e468a35cbe2d50cb87e1a743c709858cb`.
-- GitHub artifact 13079872553; outer ZIP SHA-256:
-  `6dc1992fcc6e8db5aab6e6f42f39e926fe91dbda68af39d5ff712dde4e22225e`.
-- Downloaded outer ZIP and enclosed IPA matched both digests. ZIP, plist,
+- Exact compiled source: `3ff7ce92f24c1ec685a772a62e6647603e669988`.
+- Successful run: https://github.com/Kbryce0902/black-box-ios/actions/runs/41317287989
+  (job 124879916457; all workflow steps succeeded).
+- macOS 15.8.2 arm64, Xcode 26.3 (17C529), Apple Swift 6.2.4; iOS 26.2 SDK.
+  Release arm64 iphoneos, minimum iOS 17.0; simulator tests also use iOS 26.2.
+- **64 Mac core tests + nine native iOS audio tests passed; zero failures.**
+- `BlackBox-0.1.3-unsigned.ipa`: 867221 bytes, bundle com.kellen.blackbox.
+- IPA SHA-256: `94a5b23a09137f78db339f08e2f1a7a5974b37f0d20c5a117b074c64a3449630`.
+- GitHub artifact 13088301355; outer ZIP SHA-256: `5de00dda8a737ab78243807bce9fd99285e72ff46dd3c1534fe3aa0394f0f155`.
+- Downloaded ZIP and enclosed IPA matched both digests. ZIP integrity, version,
   executable permissions, arm64 Mach-O and physical iOS platform checks passed
   independently after download.
 
-Install this update over the existing app through SideStore. The owner reports a
-previous install/launch; this 0.1.2 update and live ElevenLabs playback are not yet
-phone-verified. Saved keys, bundle ID and SQLite location are unchanged. Version
-0.1.1 voice/model fields needed Save configuration; use it before updating if
-those entries have not been saved. Version 0.1.2 autosaves these fields.
+Install over the existing app through SideStore. The owner reports 0.1.2 install,
+launch and live voice/model metadata success, followed by native playback -50.
+This 0.1.3 update and actual private-key speech have not been phone-verified.
+Saved keys, bundle ID and SQLite location remain unchanged. Voice/model edits
+have autosaved since 0.1.2; no need to re-enter a working key to test this repair.
 
 No real provider key, private Voice ID, signing identity or voice material was
-uploaded to this repository. No paid provider inference, subscription change or
-account-permission change occurred here. Metadata success cannot establish TTS
-access, verification, billing or quota; Test voice is the explicit live check.
+uploaded to the repository. No paid provider request, subscription or account
+permission change occurred here. Metadata success is not synthesis proof.
+Test device audio is local; Test voice is the explicit live provider test.
 
 **RDC's native public-client registration gate remains unresolved.**
 
@@ -181,6 +183,14 @@ access, verification, billing or quota; Test voice is the explicit live check.
    setup and model IDs. Run 41297291686 passed 64 tests, native compilation and
    verified packaging. Documentation-only updates do not alter that binary.
 
+7. 0.1.3 initial commit `bf0c389232e5d370ada5c4acec582b462fb09fc1` passed 64
+   core tests and native packaging in run 41316725723, but the simulator build
+   attempted an x86_64 app against arm64 SwiftPM. No audio tests ran in that attempt.
+8. Commit `3ff7ce92f24c1ec685a772a62e6647603e669988` selects the host simulator architecture and
+   ONLY_ACTIVE_ARCH. Run 41317287989 passed all 64 core and nine native audio tests,
+   device compilation, packaging and artifact verification. Subsequent docs-only
+   updates do not alter those compiled source bytes.
+
 The prepared workflow skips private-repository Mac jobs before allocation and
 retains artifacts for one day. No private runner minutes or paid-service/billing
 settings were enabled. The standalone IPA was saved for delivery because GitHub
@@ -199,10 +209,10 @@ Swift 5 language mode as configured. No warning was promoted to a device test.
 | 01 Foundation | Four SwiftUI tabs, Keychain, SQLite, typed task/action contracts, native project/icon | Core storage/policy tests pass. Apple Keychain/UI require Xcode/device. No production mock path; Fixture doubles live only in Tests |
 | 02 Gemini | REST/SSE conversation, complete continuation parts, bounded serial tool loop, error/result correlation | Parser/execution tests pass. User key/model inference pending |
 | 03 Desktop | Explicit selection, live schema/device checks, aliases, file search/read, fixed URL/app/path helpers, actual-resource helper | Policy/encoding/evidence-parser tests pass. Real service output shapes and Windows operations remain unverified |
-| 04 Voice | Replaceable TranscriptionProvider, Apple finalized captions, streamed ElevenLabs PCM, stop/replay/mute, independent cancellation, routing/interruption handlers | PCM tests and native parser pass. Actual permissions, audio and Bluetooth pending |
+| 04 Voice | Replaceable TranscriptionProvider, Apple finalized captions, streamed ElevenLabs PCM, stop/replay/mute, independent cancellation, routing/interruption handlers | 64 core and nine native iOS audio tests pass. Physical permissions, speaker/headset and private-key synthesis pending |
 | 05 Research/memory | Separate Google-grounded research tool, sources/support markers/rendered attribution, editable memories, per-device aliases | Citation/UTF-8 tests pass; actual grounding and UI attribution acceptance pending |
 | 06 Recovery | Transactional claims, no duplicate dispatch/replay, persisted unknown outcomes, saved-call reconciliation on resume, public-client refresh/revocation adapter and reported usage limits | Recovery/cancellation/duplicate/refresh fixtures pass. Native suspension/token/server-revocation tests pending |
-| 07 Release | Xcode configuration, actual-build-only unsigned packaging script, SideStore/PC startup instructions and acceptance checklist | Mac arm64 Release build, 64 tests, verified 0.1.2 unsigned IPA PASS; SideStore signing/install and real-device acceptance pending |
+| 07 Release | Xcode configuration, actual-build-only unsigned packaging script, SideStore/PC startup instructions and acceptance checklist | Mac arm64 Release build, 64 core + nine iOS audio tests, verified 0.1.3 unsigned IPA PASS; SideStore signing/install and real-device acceptance pending |
 
 All modules use the same app, contracts and persistence. The first vertical slice passes only with deterministic fixtures: text → model tool → validation → persisted action → fixture RDC executor → correlated model response. Real YouTube launch is still pending Module 00. Voice is integrated behind that same execution boundary, not evidence that the live slice passed.
 
@@ -251,17 +261,17 @@ All modules use the same app, contracts and persistence. The first vertical slic
 ## Missing inputs / environment
 
 1. User's Gemini API key and available model (enter in native Settings; never paste into handoff/source/logs).
-2. User's ElevenLabs key and accessible authorized target voice ID. Voice creation/owner verification/sharing is separate; see docs/VOICE_SETUP.md. No sample material or target voice was created here.
+2. ElevenLabs key and accessible Voice ID are stored on the owner's phone and 0.1.2 metadata success is reported. They are unavailable in this build environment; 0.1.3 live synthesis acceptance remains pending. No target voice was created here.
 3. RDC-confirmed public native registration with token auth none, S256, exact callback, mcp:tools scope, advertised resource audience, refresh and supported grant-revocation route.
 4. Actual selected Windows PC/agent online after this app's own OAuth consent; helper path and per-device folder aliases; actual Windows, PowerShell, Node and RDC versions.
-5. User-side SideStore update to 0.1.2 and native permission/provider checks. A previous install/launch is reported; 0.1.2 Mac compilation is complete.
+5. User-side SideStore update to 0.1.3 and real speech/output-route acceptance. Native device compilation and simulator audio execution are complete.
 
 ## Next concrete step
 
-Save any unsaved voice configuration in the existing app, then install 0.1.2
-through SideStore over it. Open Settings, run Check voice and model, select the
-intended returned model (Eleven v4 uses eleven_v4), then use Test voice. Check the
-actual inline ElevenLabs reason if access is refused; never paste the key into
-chat or source. Metadata read permissions and Text to Speech permission are
-separate. Record actual speech/phone acceptance in docs/ACCEPTANCE.md. Continue
-RDC public-native registration separately before claiming phone-to-PC control.
+Install 0.1.3 through SideStore over the current app. In Settings, use Test device
+audio (no API usage) and check the Output route, then Test voice (uses API quota).
+The existing selected voice/model/key are retained. Record whether the local
+tone and provider speech are audible on speaker/headset. If a failure remains,
+record its exact stage and sanitized inline reason, never the key. Update
+acceptance with the actual physical-device result. Continue RDC public-native
+registration separately before claiming phone-to-PC control.

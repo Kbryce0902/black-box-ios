@@ -1,5 +1,32 @@
 # Verified results — 2026-11-01
 
+## Native 0.1.3 playback repair — PASS in simulator, physical phone pending
+
+- Source: `3ff7ce92f24c1ec685a772a62e6647603e669988`; job 124879916457.
+- Successful run: https://github.com/Kbryce0902/black-box-ios/actions/runs/41317287989
+- macOS 15.8.2 arm64, Xcode 26.3 (17C529), Swift 6.2.4, iOS 26.2 SDK.
+- **64 portable core tests + nine native iOS audio tests; zero failures.**
+  The hosted simulator tests execute the app's actual AVAudioSession, engine,
+  decoder and AVAudioPlayerNode completion callbacks with local PCM. Capture
+  ownership uses a fixture transcriber, so this is not real microphone testing.
+- Native cases: session/PCM completion, no-key local tone, capture-to-output,
+  stop/retry, late request isolation, provider/native error separation,
+  empty/truncated PCM, interruption recovery and odd/newline byte boundaries.
+- The old Bluetooth option combination was accepted by this simulator. The
+  exact physical -50 was not reproduced or claimed fixed by a live phone test.
+- Literal result excerpts: [audio-0.1.3.log](audio-0.1.3.log).
+- Release arm64 physical-device build and packaging passed.
+- `BlackBox-0.1.3-unsigned.ipa`: 867221 bytes, build 4, bundle com.kellen.blackbox,
+  minimum iOS 17.0. SHA-256: `94a5b23a09137f78db339f08e2f1a7a5974b37f0d20c5a117b074c64a3449630`.
+- Downloaded outer archive and enclosed IPA checksums matched. Structural
+  verification passed independently after download. SideStore signing/install
+  and live private-key playback remain pending.
+- First run 41316725723 compiled the device IPA, but app/core simulator
+  architectures differed. The corrected simulator script selects host arch
+  and ONLY_ACTIVE_ARCH. A complete fresh run then passed; no failing audio
+  test was skipped or relabeled.
+- No private API key, billed synthesis or new Linux toolchain run was used.
+
 ## Native 0.1.2 IPA build — PASS
 
 - Source: `93af30d7d00bf4abc4c6eb959ca92ec64494b636`.

@@ -1,0 +1,31 @@
+Successful run: https://github.com/Kbryce0902/black-box-ios/actions/runs/41317287989
+Source: 3ff7ce92f24c1ec685a772a62e6647603e669988
+Literal relevant excerpts from job 124879916457; native playback uses local fixture PCM, not a live provider key.
+
+2026-11-01T14:40:25.8573280Z 	 Executed 64 tests, with 0 failures (0 unexpected) in 0.220 (0.232) seconds
+2026-11-01T14:40:25.8574110Z 	 Executed 64 tests, with 0 failures (0 unexpected) in 0.220 (0.235) seconds
+2026-11-01T14:41:31.2483040Z ** BUILD SUCCEEDED **
+2026-11-01T14:44:30.0007110Z Test Case '-[BlackBoxAudioTests.AudioPlaybackTests testDeviceToneUsesTheRealPlaybackPathWithoutAKey]' started.
+2026-11-01T14:44:30.4213730Z Test Case '-[BlackBoxAudioTests.AudioPlaybackTests testDeviceToneUsesTheRealPlaybackPathWithoutAKey]' passed (1.811 seconds).
+2026-11-01T14:44:30.4215720Z Test Case '-[BlackBoxAudioTests.AudioPlaybackTests testEmptyAndTruncatedAudioCannotReportSpeechComplete]' started.
+2026-11-01T14:44:30.5639950Z Test Case '-[BlackBoxAudioTests.AudioPlaybackTests testEmptyAndTruncatedAudioCannotReportSpeechComplete]' passed (0.086 seconds).
+2026-11-01T14:44:31.3215080Z Test Case '-[BlackBoxAudioTests.AudioPlaybackTests testInterruptedPlaybackCanRecoverOnNextRequest]' started.
+2026-11-01T14:44:31.3377320Z Test Case '-[BlackBoxAudioTests.AudioPlaybackTests testInterruptedPlaybackCanRecoverOnNextRequest]' passed (0.910 seconds).
+2026-11-01T14:44:31.7055560Z Test Case '-[BlackBoxAudioTests.AudioPlaybackTests testLateCancelledRequestCannotTouchNewPlayback]' started.
+2026-11-01T14:44:31.7823570Z Test Case '-[BlackBoxAudioTests.AudioPlaybackTests testLateCancelledRequestCannotTouchNewPlayback]' passed (0.840 seconds).
+2026-11-01T14:44:31.7855620Z Test Case '-[BlackBoxAudioTests.AudioPlaybackTests testOddPCMChunksAndNewlineSampleBytesPlayToCompletion]' started.
+2026-11-01T14:44:35.4414800Z Test Case '-[BlackBoxAudioTests.AudioPlaybackTests testOddPCMChunksAndNewlineSampleBytesPlayToCompletion]' passed (0.350 seconds).
+2026-11-01T14:44:35.4421410Z Test Case '-[BlackBoxAudioTests.AudioPlaybackTests testPlaybackSessionAndPCMCompleteOnIOS]' started.
+2026-11-01T14:44:35.5239630Z Legacy playback/Bluetooth probe: accepted by this simulator
+2026-11-01T14:44:35.6061930Z Test Case '-[BlackBoxAudioTests.AudioPlaybackTests testPlaybackSessionAndPCMCompleteOnIOS]' passed (0.546 seconds).
+2026-11-01T14:44:35.6885140Z Test Case '-[BlackBoxAudioTests.AudioPlaybackTests testProviderFailureIsDistinguishedFromNativeSetup]' started.
+2026-11-01T14:44:35.9215510Z Test Case '-[BlackBoxAudioTests.AudioPlaybackTests testProviderFailureIsDistinguishedFromNativeSetup]' passed (0.043 seconds).
+2026-11-01T14:44:36.0817710Z Test Case '-[BlackBoxAudioTests.AudioPlaybackTests testRecordingStopsBeforePlaybackAndCanStartAgain]' started.
+2026-11-01T14:44:36.0821130Z Test Case '-[BlackBoxAudioTests.AudioPlaybackTests testRecordingStopsBeforePlaybackAndCanStartAgain]' passed (0.566 seconds).
+2026-11-01T14:44:36.3545690Z Test Case '-[BlackBoxAudioTests.AudioPlaybackTests testStopQueuedPlaybackAndRetryDoNotHang]' started.
+2026-11-01T14:44:36.4372120Z Test Case '-[BlackBoxAudioTests.AudioPlaybackTests testStopQueuedPlaybackAndRetryDoNotHang]' passed (0.679 seconds).
+2026-11-01T14:44:37.0982420Z 	 Executed 9 tests, with 0 failures (0 unexpected) in 5.831 (8.137) seconds
+2026-11-01T14:44:37.8835420Z 	 Executed 9 tests, with 0 failures (0 unexpected) in 5.831 (8.137) seconds
+2026-11-01T14:44:38.1812090Z 	 Executed 9 tests, with 0 failures (0 unexpected) in 5.831 (8.138) seconds
+2026-11-01T14:47:07.2549690Z ** TEST SUCCEEDED **
+
