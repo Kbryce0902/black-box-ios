@@ -8,9 +8,13 @@ Updated 2026-11-01. Source version **0.1.0 development**. Continue this source t
 the separate repository. https://github.com/Kbryce0902/black-box-ios was created
 and verified public, ID 1441611749, default branch main, initial commit
 1131036952ae44498213e73114f177f83ded691d. The GitHub connector confirms push
-permission. Upload the source and start the prepared Mac workflow next. No native
-compile or IPA has completed yet. Earlier approval-pending notes below describe
-the previous checkpoint and are superseded by this authorization.
+permission. Source commit cccf2427232bf8394ff13535fc5f8f2e537a0aa8 was pushed.
+Mac run 41288013816 passed all 34 core tests on macOS 15.8.2, Xcode 26.3, Swift
+6.2.4. Native build stopped because the publication manifest omitted the existing
+BlackBox.xcodeproj directory. Add its project and shared scheme in the next
+commit, then repeat the Mac build. No IPA has completed yet. Earlier
+approval-pending notes below describe the previous checkpoint and are superseded
+by the user's authorization.
 
 The user requested an installable IPA. The existing source and its Library bundle
 were found in the same workspace; no fresh implementation or materialization was
