@@ -4,16 +4,16 @@ Statuses below distinguish completed compilation from pending real-device checks
 
 | Check | Required observation | Status |
 |---|---|---|
-| Native device build | Release arm64 iphoneos compile; compiler/SDK versions recorded | PASS — Xcode 26.3, Swift 6.2.4, iOS SDK 26.2, run 41317287989 |
-| Simulator | Hosted app session/engine/player execution with local PCM | PASS — nine native audio tests on arm64 iOS 26.2; not physical headset or microphone proof |
-| IPA packaging | Physical iOS Mach-O, ZIP integrity and exact downloaded checksums | PASS — 0.1.3, 867221 bytes; SHA-256 in HANDOFF.md |
+| Native device build | Release arm64 iphoneos compile; compiler/SDK versions recorded | PASS — Xcode 26.3, Swift 6.2.4, iOS SDK 26.2, run 41331459253 |
+| Simulator | Hosted app session/engine/player execution with local PCM | PASS — 11 native tests (nine audio, two Keychain) on arm64 iOS 26.2; physical hardware acceptance remains separate |
+| IPA packaging | Physical iOS Mach-O, ZIP integrity and exact downloaded checksums | PASS — 0.1.4, 909583 bytes; SHA-256 in HANDOFF.md |
 | Phone identity | Runtime hw.machine and OS/build; actual target confirmed | PENDING |
-| SideStore | Re-signed install, launch and refresh on actual OS | 0.1.2 install/launch reported by owner; refresh and 0.1.3 acceptance pending |
+| SideStore | Re-signed install, launch and refresh on actual OS | 0.1.3 mostly working reported by owner; refresh and 0.1.4 acceptance pending |
 | Gemini setup feedback | Save starts checking; errors/deadline replace progress; returned model can be selected | 48 tests PASS on Linux and macOS including 14 Gemini regressions; real-key verification pending |
 | Gemini direct | Native API response with user's key and selected model | PENDING |
 | ElevenLabs | Audible streamed reply using configured authorized voice ID | 64 core and nine native audio tests PASS; owner reported 0.1.2 metadata access but native -50; 0.1.3 actual speech pending |
 | ElevenLabs setup | Canonical model, voice correlation, redacted errors, deadline and independent TTS test | 0.1.2 real voice/model metadata success reported by owner; native Test voice failed with OSStatus -50; 0.1.3 native repair compiled and simulator-tested; phone acceptance pending |
-| RDC registration | Public native registration, no secret, exact callback | BLOCKED by tested DCR result |
+| RDC registration | Supported per-install method, exact callback and protected credentials | Live DCR HTTP 200/callback observed; 81 core and 11 native tests PASS; actual phone browser/token grant pending |
 | RDC callback | Independent system-browser PKCE/state validation and code exchange | PENDING |
 | Refresh | Expired access token refresh, rotation preserved, concurrent refresh serialized | PENDING |
 | Revocation | Supported server grant revocation; later tool access refused | PENDING; no endpoint advertised |
@@ -39,7 +39,7 @@ Record the Windows helper script's separate acceptance output with Windows build
 
 ## First real integration session
 
-1. Resolve the public-client registration blocker with RDC.
+1. Install 0.1.4 and complete Black_Box’s browser RDC sign-in with the optional client ID blank.
 2. Build and install on the phone. Run the three native provider harness checks.
 3. Verify the existing paired PC and install/test the reviewed helper.
 4. Select that device, check the helper, send the YouTube text request and record each observed result.

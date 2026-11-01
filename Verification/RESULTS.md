@@ -1,5 +1,38 @@
 # Verified results — 2026-11-01
 
+## Native 0.1.4 RDC compatibility — compiled/tested; live grant pending
+
+- Exact source `4c82946be94d49852ffba85b732f92f5b5e96144`; successful run
+  https://github.com/Kbryce0902/black-box-ios/actions/runs/41331459253, job 124922270683.
+- macOS 15.8.2 arm64, Xcode 26.3 (17C529), Swift 6.2.4, iOS SDK 26.2.
+- **81 core tests + 11 native iOS tests, zero failures.** The two new native
+  tests use real iOS Keychain with synthetic account IDs/credentials and verify
+  read/write/delete plus an atomic registration/token envelope. All nine audio
+  regressions passed. The simulator host uses local ad-hoc signing; no Apple
+  account, development certificate or provisioning subscription was used.
+- 17 new core cases cover DCR auth-method negotiation, PKCE, post/basic/public
+  token auth, refresh/revoke, backwards compatibility, expiry, error redaction,
+  no retries, observed text device list and stale MCP reset isolation.
+- Run 41330616249 compiled the device app but its new native token fixture
+  could not call an internal initializer. An explicit public initializer fixed it.
+  Run 41330953321 then passed core/device/audio but failed both Keychain tests
+  in its unsigned simulator host. The final run ad-hoc signed that host and
+  passed the unchanged storage tests. No failing test was skipped.
+- Literal relevant excerpts: [rdc-0.1.4.log](rdc-0.1.4.log).
+- Device IPA `BlackBox-0.1.4-unsigned.ipa`: 909583 bytes, build 5,
+  com.kellen.blackbox, minimum iOS 17.0; SHA-256 `b5b5f9c37c5008f466b0fb6014052c4ccf2704128b7a68e396033adcaa3eff9c`.
+- Outer archive and IPA digests matched; ZIP/plist/arm64/physical-platform and
+  executable-permission checks passed again after download. The delivered
+  device IPA is unsigned, separately from the signed simulator test host.
+- A live unauthenticated registration probe reproduced HTTP 200, the exact
+  custom callback, and client_secret_post with a credential. Only noncredential
+  fields were saved. This environment returned 403 for authorize/invalid-code
+  token probes; no real code/token or user grant was obtained.
+- Actual browser consent, callback, refresh and PC action tests remain pending
+  on the owner's phone. The separate connector's online PC is not that proof.
+- No live user API key, billed synthesis, new Linux Swift run or PC mutation
+  occurred here. Device storage identities are retained.
+
 ## Native 0.1.3 playback repair — PASS in simulator, physical phone pending
 
 - Source: `3ff7ce92f24c1ec685a772a62e6647603e669988`; job 124879916457.

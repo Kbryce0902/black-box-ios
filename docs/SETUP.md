@@ -2,10 +2,10 @@
 
 ## Prerequisites
 
-- A Mac with Xcode and a suitable installed iOS SDK for compilation. The verified CI build used Xcode 26.3 (17C529), Apple Swift 6.2.4 and the iOS 26.2 SDK on macOS 15.8.2. Actual phone installation/launch is still pending. Check Apple's support table for direct Xcode device debugging on the actual phone OS; this Linux workspace uses the GitHub Mac runner for compilation.
+- A Mac with Xcode and a suitable installed iOS SDK for compilation. The verified CI build used Xcode 26.3 (17C529), Apple Swift 6.2.4 and the iOS 26.2 SDK on macOS 15.8.2. Prior versions were installed by the owner; 0.1.4 phone acceptance is pending. Check Apple's support table for direct Xcode device debugging on the actual phone OS; this Linux workspace uses the GitHub Mac runner for compilation.
 - Your own Gemini API key from Google AI Studio. Choose a model actually available to that key; the starting ID is configurable.
 - Your own ElevenLabs API key, access to the desired authorized voice ID and a supported TTS model.
-- A **public native RDC client registration** for `com.kellen.blackbox:/oauth/callback`, with PKCE S256 and no client secret. See FEASIBILITY.md: the tested dynamic path returned a confidential registration and is rejected.
+- An RDC account paired to your PC. In 0.1.4, Black_Box registers each installation automatically, stores its runtime credential in Keychain and uses browser sign-in with PKCE. Leave the optional public client ID blank for normal setup; no shared credential is supplied in the app.
 - A paired Windows PC with the RDC remote agent awake and online. RDC's published minimum is Node.js 18+. This is a minimum, not a recommendation to install an obsolete runtime. Verify the current Node installer supports the actual Windows 10 x64 build before installation. No Node installation or PC inspection occurred in this build session.
 
 Enter provider keys in the app, not a source/configuration file. No account key is required for the portable tests.
@@ -14,7 +14,7 @@ Enter provider keys in the app, not a source/configuration file. No account key 
 
 For a Mac runner hosted by GitHub instead of a local Mac, see
 [CLOUD_BUILD.md](CLOUD_BUILD.md). The workflow, remote compilation and packaging checks have passed;
-SideStore re-signing and phone installation remain pending.
+SideStore re-signing and 0.1.4 phone acceptance remain pending.
 
 From the extracted BlackBox directory:
 
@@ -33,7 +33,7 @@ To build an unsigned device artifact for SideStore:
 Scripts/build-ios.sh unsigned
 ```
 
-Only after `xcodebuild` successfully produces a real `iphoneos` app does the script package `build/BlackBox-0.1.3-unsigned.ipa`. It is unsigned and must be re-signed; it is not an App Store archive or a claim of successful installation. The script exits explicitly on Linux and never fabricates an IPA.
+Only after `xcodebuild` successfully produces a real `iphoneos` app does the script package `build/BlackBox-0.1.4-unsigned.ipa`. It is unsigned and must be re-signed; it is not an App Store archive or a claim of successful installation. The script exits explicitly on Linux and never fabricates an IPA.
 
 For a direct Xcode install, choose your signing team and a bundle ID provisioned for that account. No development team, signing certificate or provisioning profile is supplied. Keep the callback URL scheme `com.kellen.blackbox` registered even if re-signing changes the app bundle identifier.
 
@@ -81,7 +81,7 @@ send a message or explicitly run the response harness to test that next.
 
 1. Open Settings. Store the Gemini and ElevenLabs keys separately. After storage the input clears and only a masked presence indicator is shown. Validate the Gemini key/model and ElevenLabs voice access.
 2. Save the configured model, voice ID and limits. Explicitly run the short inference and playback harness tests; these consume your provider quota. No paid service is enabled by the app.
-3. Check RDC discovery. Supply only a provider-issued **public** client ID if dynamic registration still returns a secret. Start Sign in with PKCE. Complete the system browser consent/callback flow. Never paste a token from ChatGPT or another application.
+3. Under Independent RDC sign-in, leave the optional client ID blank and tap Sign in with PKCE. Complete the browser sign-in with the same RDC account used for your PC. The app handles its own per-install registration and callback. Progress, cancel and redacted errors are shown inline; no token copying is required.
 4. Refresh paired devices and select the intended computer explicitly. No automatic first-device selection occurs.
 5. Add aliases such as projects, school and downloads with actual absolute Windows paths for that device. Search/read/open paths are restricted to these roots.
 6. Install the reviewed helper on the PC as below, enter its absolute path, and check the helper handshake. It expires after app backgrounding/device changes.
@@ -118,7 +118,7 @@ The app uses a discovered OAuth revocation endpoint if one is advertised. The ch
 ## Troubleshooting
 
 - Chat/research can work with PC offline; they still require internet, a valid Gemini key and provider quota.
-- DCR returns client_secret_post: native gate remains blocked. Obtain a supported public registration; do not embed that secret.
+- 0.1.3 registration/architecture error: update to 0.1.4, which handles supported per-install DCR credentials. Leave the optional client ID blank. The phone must still complete its own browser grant. For a stale/expired registration, Remove local RDC credentials and sign in again; that does not revoke server access.
 - Unknown device output/schema: keep the gate closed and update the versioned adapter using real, redacted native results.
 - Helper handshake missing: check actual path, script review/unblock, Windows/PowerShell and RDC output. A started process is not a successful helper result.
 - Unknown task/action: retrieve the existing remote call if an ID exists or inspect actual PC state. Do not press repeated launch/mutation requests to probe for success.

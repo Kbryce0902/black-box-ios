@@ -81,3 +81,8 @@ The Linux SwiftPM test launcher intermittently crashes in this execution host wh
   Do not infer machine availability from prose or the ChatGPT connection.
 - Live registration was observed, but interactive consent/token/device control
   on the owner's phone remain unverified until that app completes the flow.
+
+- Final 0.1.4 run 41331459253 passed 81 core and 11 native tests. Real Keychain
+  checks require the simulator host to be locally ad-hoc signed; the device IPA
+  remains unsigned for SideStore. The failed fixture-boundary and unsigned-host
+  attempts are retained in HANDOFF.md. No native check was skipped to publish it.

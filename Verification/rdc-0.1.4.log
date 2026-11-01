@@ -1,0 +1,49 @@
+Successful run: https://github.com/Kbryce0902/black-box-ios/actions/runs/41331459253
+Source: 4c82946be94d49852ffba85b732f92f5b5e96144
+Literal relevant excerpts from job 124922270683. OAuth requests use fixtures; native Keychain tests use synthetic credentials. No user browser grant or desktop action is represented by these tests.
+
+2026-11-01T17:27:11.1958620Z Test Case '-[BlackBoxCoreTests.RDCCompatibilityTests testAmbiguousOrDuplicateDeviceRecordsAreRejected]' started.
+2026-11-01T17:27:11.1959510Z Test Case '-[BlackBoxCoreTests.RDCCompatibilityTests testAmbiguousOrDuplicateDeviceRecordsAreRejected]' passed (0.000 seconds).
+2026-11-01T17:27:11.1960450Z Test Case '-[BlackBoxCoreTests.RDCCompatibilityTests testBasicAuthenticationEscapesCredentialsAndAvoidsFormSecret]' started.
+2026-11-01T17:27:11.1961500Z Test Case '-[BlackBoxCoreTests.RDCCompatibilityTests testBasicAuthenticationEscapesCredentialsAndAvoidsFormSecret]' passed (0.000 seconds).
+2026-11-01T17:27:11.1962610Z Test Case '-[BlackBoxCoreTests.RDCCompatibilityTests testBrowserAuthorizationRetainsPKCEAndNeverIncludesInstallationSecret]' started.
+2026-11-01T17:27:11.1963670Z Test Case '-[BlackBoxCoreTests.RDCCompatibilityTests testBrowserAuthorizationRetainsPKCEAndNeverIncludesInstallationSecret]' passed (0.003 seconds).
+2026-11-01T17:27:11.2337660Z Test Case '-[BlackBoxCoreTests.RDCCompatibilityTests testDiscoveryRequiresPKCEAndAllowsAdvertisedPostAuthentication]' started.
+2026-11-01T17:27:11.2387850Z Test Case '-[BlackBoxCoreTests.RDCCompatibilityTests testDiscoveryRequiresPKCEAndAllowsAdvertisedPostAuthentication]' passed (0.001 seconds).
+2026-11-01T17:27:11.2389730Z Test Case '-[BlackBoxCoreTests.RDCCompatibilityTests testExpiredRegistrationCannotDispatchTokenRequest]' started.
+2026-11-01T17:27:11.2390690Z Test Case '-[BlackBoxCoreTests.RDCCompatibilityTests testExpiredRegistrationCannotDispatchTokenRequest]' passed (0.000 seconds).
+2026-11-01T17:27:11.2392210Z Test Case '-[BlackBoxCoreTests.RDCCompatibilityTests testInvalidCallbackFragmentAndDuplicateCodesAreRejected]' started.
+2026-11-01T17:27:11.2393450Z Test Case '-[BlackBoxCoreTests.RDCCompatibilityTests testInvalidCallbackFragmentAndDuplicateCodesAreRejected]' passed (0.000 seconds).
+2026-11-01T17:27:11.2394400Z Test Case '-[BlackBoxCoreTests.RDCCompatibilityTests testLegacyPublicRegistrationAndDiscoveryDecode]' started.
+2026-11-01T17:27:11.2395120Z Test Case '-[BlackBoxCoreTests.RDCCompatibilityTests testLegacyPublicRegistrationAndDiscoveryDecode]' passed (0.001 seconds).
+2026-11-01T17:27:11.2395960Z Test Case '-[BlackBoxCoreTests.RDCCompatibilityTests testMissingCredentialChangedCallbackOrUnadvertisedMethodFailClosed]' started.
+2026-11-01T17:27:11.2396890Z Test Case '-[BlackBoxCoreTests.RDCCompatibilityTests testMissingCredentialChangedCallbackOrUnadvertisedMethodFailClosed]' passed (0.001 seconds).
+2026-11-01T17:27:11.2397850Z Test Case '-[BlackBoxCoreTests.RDCCompatibilityTests testObservedDeviceListTextParsesExplicitAvailabilityAndIDs]' started.
+2026-11-01T17:27:11.2398730Z Test Case '-[BlackBoxCoreTests.RDCCompatibilityTests testObservedDeviceListTextParsesExplicitAvailabilityAndIDs]' passed (0.000 seconds).
+2026-11-01T17:27:11.2399710Z Test Case '-[BlackBoxCoreTests.RDCCompatibilityTests testPerInstallationRegistrationPreservesReturnedMethodAndCredential]' started.
+2026-11-01T17:27:11.2400670Z Test Case '-[BlackBoxCoreTests.RDCCompatibilityTests testPerInstallationRegistrationPreservesReturnedMethodAndCredential]' passed (0.001 seconds).
+2026-11-01T17:27:11.2401630Z Test Case '-[BlackBoxCoreTests.RDCCompatibilityTests testPostAuthenticationAppliesToCodeAndRefreshWithRotation]' started.
+2026-11-01T17:27:11.2402550Z Test Case '-[BlackBoxCoreTests.RDCCompatibilityTests testPostAuthenticationAppliesToCodeAndRefreshWithRotation]' passed (0.001 seconds).
+2026-11-01T17:27:11.2403450Z Test Case '-[BlackBoxCoreTests.RDCCompatibilityTests testProviderTokenFailureIsNotAutomaticallyRetried]' started.
+2026-11-01T17:27:11.2404250Z Test Case '-[BlackBoxCoreTests.RDCCompatibilityTests testProviderTokenFailureIsNotAutomaticallyRetried]' passed (0.002 seconds).
+2026-11-01T17:27:11.2405520Z Test Case '-[BlackBoxCoreTests.RDCCompatibilityTests testPublicClientStillExchangesWithoutAnySecret]' started.
+2026-11-01T17:27:11.2408130Z Test Case '-[BlackBoxCoreTests.RDCCompatibilityTests testPublicClientStillExchangesWithoutAnySecret]' passed (0.001 seconds).
+2026-11-01T17:27:11.2410120Z Test Case '-[BlackBoxCoreTests.RDCCompatibilityTests testRegistrationCredentialRoundTripsForProtectedStorage]' started.
+2026-11-01T17:27:11.2412310Z Test Case '-[BlackBoxCoreTests.RDCCompatibilityTests testRegistrationCredentialRoundTripsForProtectedStorage]' passed (0.000 seconds).
+2026-11-01T17:27:11.2415560Z Test Case '-[BlackBoxCoreTests.RDCCompatibilityTests testRevokeUsesRegisteredClientAuthentication]' started.
+2026-11-01T17:27:11.2417830Z Test Case '-[BlackBoxCoreTests.RDCCompatibilityTests testRevokeUsesRegisteredClientAuthentication]' passed (0.000 seconds).
+2026-11-01T17:27:11.2420000Z Test Case '-[BlackBoxCoreTests.RDCCompatibilityTests testTokenErrorsKeepReasonAndRedactAllRequestCredentials]' started.
+2026-11-01T17:27:11.2422170Z Test Case '-[BlackBoxCoreTests.RDCCompatibilityTests testTokenErrorsKeepReasonAndRedactAllRequestCredentials]' passed (0.001 seconds).
+2026-11-01T17:27:11.2427840Z Test Case '-[BlackBoxCoreTests.RDCSessionIsolationTests testResetRejectsOldInitializationAndNeverReusesItsSession]' started.
+2026-11-01T17:27:11.2430160Z Test Case '-[BlackBoxCoreTests.RDCSessionIsolationTests testResetRejectsOldInitializationAndNeverReusesItsSession]' passed (0.001 seconds).
+2026-11-01T17:27:11.2437370Z 	 Executed 81 tests, with 0 failures (0 unexpected) in 0.324 (0.339) seconds
+2026-11-01T17:27:11.2439570Z 	 Executed 81 tests, with 0 failures (0 unexpected) in 0.324 (0.341) seconds
+2026-11-01T17:28:20.4070620Z ** BUILD SUCCEEDED **
+2026-11-01T17:31:03.9447500Z Test Case '-[BlackBoxAudioTests.RDCKeychainTests testGrantEnvelopeKeepsRegistrationAndRotatedTokenTogether]' started.
+2026-11-01T17:31:03.9640340Z Test Case '-[BlackBoxAudioTests.RDCKeychainTests testGrantEnvelopeKeepsRegistrationAndRotatedTokenTogether]' passed (0.043 seconds).
+2026-11-01T17:31:04.0068520Z Test Case '-[BlackBoxAudioTests.RDCKeychainTests testInstallationCredentialPersistsInDeviceKeychainAndDeletes]' started.
+2026-11-01T17:31:04.0947010Z Test Case '-[BlackBoxAudioTests.RDCKeychainTests testInstallationCredentialPersistsInDeviceKeychainAndDeletes]' passed (3.519 seconds).
+2026-11-01T17:31:04.7415320Z 	 Executed 11 tests, with 0 failures (0 unexpected) in 12.087 (12.095) seconds
+2026-11-01T17:31:04.9077960Z 	 Executed 11 tests, with 0 failures (0 unexpected) in 12.087 (12.096) seconds
+2026-11-01T17:33:16.1854130Z ** TEST SUCCEEDED **
+

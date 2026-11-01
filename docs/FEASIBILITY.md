@@ -2,32 +2,46 @@
 
 Checked 2026-11-01. This is evidence of documentation and unauthenticated discovery, not an authenticated native acceptance result.
 
-## RDC: gate not passed
+## RDC: per-install compatibility implemented in 0.1.4; live grant pending
 
-Official endpoint: `https://mcp.desktopcommander.app/mcp` (Streamable HTTP). Official setup documents OAuth/PKCE and a paired desktop agent. That establishes the intended protocol, not support for this particular native registration.
+Official endpoint: `https://mcp.desktopcommander.app/mcp` (Streamable HTTP).
+The app discovers its resource origin and requires external browser sign-in,
+PKCE S256, exact callback `com.kellen.blackbox:/oauth/callback`, state validation
+and the `mcp:tools` scope. It does not reuse ChatGPT connector credentials.
 
-Live public metadata was retrieved after initial 403 responses from another HTTP path. It advertises S256, authorization_code, refresh_token, token authentication `none` and `client_secret_post`, and a registration endpoint. The protected resource identifier is the origin `https://mcp.desktopcommander.app`, distinct from the `/mcp` transport URL. No token revocation endpoint was advertised.
+The earlier 0.1.0–0.1.3 gate accepted only a secret-free registration. Live RDC
+registration instead returns `client_secret_post` plus a new credential for that
+registration and echoes the exact callback. Rejecting every such result was an
+unnecessarily restrictive client policy: RFC 8252 section 8.4 explicitly allows
+DCR to issue per-instance native credentials; section 8.5 distinguishes those
+from a shared secret embedded in a distributed binary.
 
-One registration probe submitted JSON with:
+0.1.4 implements the returned, advertised method (none/post/basic) with per-install
+credentials in device-only Keychain. No credential is embedded in source or IPA.
+Authorization still requires browser consent, state and PKCE; token, refresh and
+supported revocation calls authenticate the registered installation over HTTPS.
+Registration/token grants are stored atomically; pending registration is separate
+from an already connected account. Legacy public grants migrate without new keys.
 
-```json
-{
-  "client_name": "Black_Box Native Feasibility",
-  "application_type": "native",
-  "redirect_uris": ["com.kellen.blackbox:/oauth/callback"],
-  "grant_types": ["authorization_code", "refresh_token"],
-  "response_types": ["code"],
-  "token_endpoint_auth_method": "none"
-}
-```
+Current public metadata and one live, unauthenticated registration were checked
+on 2026-11-01. Only whitelisted noncredential results are preserved in
+Verification/rdc-compatibility-0.1.4.json. Authorize and an invalid-code token probe
+returned HTTP 403 from this execution environment. No user code/access token or
+independent Black_Box device action was obtained. A working existing ChatGPT
+connection and an online PC are not proof of Black_Box's own grant.
 
-The response echoed the callback and grants but returned `token_endpoint_auth_method: client_secret_post` and a client secret. Only redacted metadata was saved. No user authorization, token exchange or account tool call was performed by this custom client.
+RDC's observed list_devices text output now has a strict UUID/status adapter in
+addition to structured JSON. Ambiguous records are rejected. Selection, capability
+handshake and actual helper action acceptance remain separate steps.
 
-**Conclusion:** this dynamic-registration path did not prove a secret-free native client. It does not prove that all RDC public-client configurations are impossible. The app deliberately refuses the returned confidential client. Its Settings screen also accepts a public client ID explicitly provisioned by RDC, which still needs live verification.
+No cloud backend, alternate provider, account-permission change or billing change
+has been substituted. The next live check is Settings → Sign in with PKCE on the
+owner's phone, then Computer → Refresh paired devices and select the computer.
 
-**Smallest supported change to investigate:** RDC provisions or fixes a public native registration with PKCE S256, token endpoint auth `none`, exact callback `com.kellen.blackbox:/oauth/callback`, least scope `mcp:tools`, refresh support and the advertised resource audience. Obtain its supported grant-revocation route. No cloud backend has been substituted. If RDC confirms public clients are unsupported, the user must choose whether to change provider or authorize another architecture; current code does neither silently.
-
-The app never reads ChatGPT connector credentials. A previously paired device/account may be reused only after this app receives its own authorization grant.
+Standards and primary implementation references:
+- https://www.rfc-editor.org/rfc/rfc8252.html#section-8.4
+- https://www.rfc-editor.org/rfc/rfc7591.html
+- https://github.com/modelcontextprotocol/python-sdk/blob/main/docs/migration.md
 
 ## Gemini
 
@@ -43,9 +57,14 @@ The direct `POST /v1/text-to-speech/{voice_id}/stream?output_format=pcm_24000` a
 
 The native deployment floor is iOS 17 because the app uses iOS 17 SwiftUI APIs. Source is compiled in Swift 5 language mode with a Swift-tools 5.9 package manifest. The portable core was actually compiled with Swift 6.0.3 on Ubuntu 24.04 x86_64. This does not validate Apple framework calls.
 
-Apple's current compatibility table lists Xcode 27.1 with iOS 27.1 SDK and macOS Tahoe 26.6 or later; check the current table and actual machine before building. There is no Mac, Xcode, Apple SDK, signing identity or connected phone here. The app's harness displays the actual `hw.machine` identifier and runtime OS/build; a marketing device name and prior user-agent string are not hardware verification. No iPhone 18 Pro Max simulator or SideStore result is claimed.
+Actual compilation uses a public GitHub Mac runner: Xcode 26.3, Swift 6.2.4 and
+iOS 26.2 on macOS 15.8.2, with native simulator execution. This workspace has no
+connected iPhone or physical-device signing identity. The owner reports prior
+SideStore installs and 0.1.3 mostly working; 0.1.4 physical acceptance is pending.
+The native harness can report hw.machine and the actual OS/build; an inferred
+marketing name is not hardware verification. See HANDOFF.md for exact evidence.
 
-SideStore's official installation guide covers pairing, trust, Developer Mode and its refresh workflow. This app needs no JIT or special background entitlement. Re-signing and the OAuth callback still require actual testing on the user's OS/device. No IPA exists until a real `iphoneos` build succeeds.
+SideStore's official installation guide covers pairing, trust, Developer Mode and its refresh workflow. This app needs no JIT or special background entitlement. Re-signing and the OAuth callback still require actual testing on the user's OS/device. A real arm64 IPA was compiled and delivered for earlier releases; each new version still requires its own successful native build and structural verification.
 
 ## Primary sources
 

@@ -3,7 +3,7 @@
 Updated 2026-11-01. Source version **0.1.4 development**. Continue this repository;
 do not restart from a proposal.
 
-## RDC independent sign-in compatibility — 0.1.4 (build verification pending)
+## RDC independent sign-in compatibility — 0.1.4
 
 The owner confirmed 0.1.3 mostly works, then reached the exact native-registration
 error while connecting RDC. The PC's RDC agent was independently observed online
@@ -36,20 +36,18 @@ records still fail. MCP reset rejects stale session replies; device selection an
 Windows helper gates remain intact. Generic OAuth errors retain bounded reasons
 while redacting token/secret/code/verifier values.
 
-17 new core regressions cover DCR, PKCE, all credential methods, refresh/revoke,
-legacy coding, expiry, rejection, redaction, no retries, device-list formats and
-stale MCP reset. Two hosted native tests exercise actual Keychain storage and
-atomic grant persistence; nine existing audio tests are retained. Expected test
-counts: 81 core + 11 native. Local plist/YAML/XML/Bash checks pass. Run 41330616249 passed all 81 core tests and compiled the device IPA. The new
-iOS storage test did not compile because OAuthTokens had no public initializer
-across the package boundary; that initializer is now explicit. No native storage
-execution was claimed for that attempt. Run 41330953321 passed all 81 core tests, compiled the device app and passed all
-nine native audio tests, but both real Keychain tests failed in the unsigned
-simulator test host. The simulator harness now uses local ad-hoc signing (no
-Apple account/certificate); device IPA packaging remains unsigned. Keychain
-write/delete errors now include status codes for diagnosis. No failing test was
-skipped. A fresh full run and artifact retrieval remain pending. Version 0.1.4/build 5 preserves
-Gemini/ElevenLabs keys, voice settings, bundle ID and SQLite.
+Verification complete: all **81 core tests** and **11 native iOS tests** passed
+in run 41331459253. The 17 new core regressions cover DCR, PKCE, all credential
+methods, refresh/revoke, legacy coding, expiry, rejection, redaction, no retries,
+device-list formats and stale MCP reset. Two native tests exercised actual
+Keychain write/read/delete and atomic grant storage; nine audio tests passed.
+The simulator test host uses local ad-hoc signing, without an Apple account or
+signing certificate. The delivered device IPA remains unsigned for SideStore.
+Local plist/YAML/XML/Bash checks and downloaded package/digest checks passed.
+There is no new Linux Swift run. Version 0.1.4/build 5 preserves provider keys,
+voice settings, bundle ID and SQLite. Actual browser consent/token/callback and
+PC action acceptance still require the owner's phone. See the current outcome
+below and Verification/rdc-0.1.4.log for exact result excerpts.
 
 References:
 https://www.rfc-editor.org/rfc/rfc8252.html#section-8.4
@@ -190,35 +188,37 @@ Current release provenance is recorded below.
 
 ## Current outcome
 
-**Native 0.1.3 (build 4) has been compiled, tested, retrieved and preserved.**
+**Native 0.1.4 (build 5) has been compiled, tested, retrieved and preserved.**
 
 - Repository: https://github.com/Kbryce0902/black-box-ios (owner-authorized public
   repository containing only this project).
-- Exact compiled source: `3ff7ce92f24c1ec685a772a62e6647603e669988`.
-- Successful run: https://github.com/Kbryce0902/black-box-ios/actions/runs/41317287989
-  (job 124879916457; all workflow steps succeeded).
-- macOS 15.8.2 arm64, Xcode 26.3 (17C529), Apple Swift 6.2.4; iOS 26.2 SDK.
+- Exact compiled source: `4c82946be94d49852ffba85b732f92f5b5e96144`.
+- Successful run: https://github.com/Kbryce0902/black-box-ios/actions/runs/41331459253
+  (job 124922270683; all workflow steps succeeded).
+- macOS 15.8.2 arm64, Xcode 26.3 (17C529), Apple Swift 6.2.4, iOS 26.2 SDK;
   Release arm64 iphoneos, minimum iOS 17.0; simulator tests also use iOS 26.2.
-- **64 Mac core tests + nine native iOS audio tests passed; zero failures.**
-- `BlackBox-0.1.3-unsigned.ipa`: 867221 bytes, bundle com.kellen.blackbox.
-- IPA SHA-256: `94a5b23a09137f78db339f08e2f1a7a5974b37f0d20c5a117b074c64a3449630`.
-- GitHub artifact 13088301355; outer ZIP SHA-256: `5de00dda8a737ab78243807bce9fd99285e72ff46dd3c1534fe3aa0394f0f155`.
+- **81 Mac core tests + 11 native iOS tests; zero failures.** Native checks
+  include nine audio tests and two real Keychain tests with synthetic records.
+- `BlackBox-0.1.4-unsigned.ipa`: 909583 bytes, bundle com.kellen.blackbox.
+- IPA SHA-256: `b5b5f9c37c5008f466b0fb6014052c4ccf2704128b7a68e396033adcaa3eff9c`.
+- GitHub artifact 13093927165; outer ZIP SHA-256: `8a1ff5fcfe9a9fe886404e41701739aff5bea01789c7d398cbf16c40fc916a8e`.
 - Downloaded ZIP and enclosed IPA matched both digests. ZIP integrity, version,
   executable permissions, arm64 Mach-O and physical iOS platform checks passed
   independently after download.
 
-Install over the existing app through SideStore. The owner reports 0.1.2 install,
-launch and live voice/model metadata success, followed by native playback -50.
-This 0.1.3 update and actual private-key speech have not been phone-verified.
-Saved keys, bundle ID and SQLite location remain unchanged. Voice/model edits
-have autosaved since 0.1.2; no need to re-enter a working key to test this repair.
+The owner reports 0.1.3 mostly works and then reproduced the app's RDC registration
+rejection. The PC agent was observed online via the separate existing connector.
+The new registration handling and device adapter are implemented and tested;
+Black_Box's own browser grant, callback/token, device listing and actual desktop
+control still need live phone acceptance. The partial unauthenticated live probe
+is recorded accurately above; no fixture or existing connector substitutes for
+this independent grant. No user account was signed into by the build process.
 
-No real provider key, private Voice ID, signing identity or voice material was
-uploaded to the repository. No paid provider request, subscription or account
-permission change occurred here. Metadata success is not synthesis proof.
-Test device audio is local; Test voice is the explicit live provider test.
-
-**RDC's native public-client registration gate remains unresolved.**
+Install over the current app through SideStore. Bundle, Keychain service and
+SQLite identities are retained. Gemini/ElevenLabs keys and voice settings are
+not changed by this update. No real provider key, private Voice ID, per-install
+credential, signing identity or voice material was uploaded to the repository.
+No billed inference, subscription or account-permission change occurred here.
 
 ## Compilation changes and checkpoints
 
@@ -244,6 +244,18 @@ Test device audio is local; Test voice is the explicit live provider test.
    device compilation, packaging and artifact verification. Subsequent docs-only
    updates do not alter those compiled source bytes.
 
+9. 0.1.4 commit `646c255d8bc412e4296c37a03f0d3f1fadfdfbcb` implemented RDC
+   compatibility. Run 41330616249 passed 81 core tests and device compilation;
+   the new native token fixture needed an explicit public initializer.
+10. Commit `613e4aa6b371b70a64b0552e37e794f7891f627c` fixed that API boundary.
+    Run 41330953321 passed the core/device/audio checks, but both new real
+    Keychain tests failed in the unsigned simulator host. No test was skipped.
+11. Commit `4c82946be94d49852ffba85b732f92f5b5e96144` uses local ad-hoc simulator signing and
+    includes Keychain status codes in write/delete failures. Run 41331459253
+    passed all 81 core and 11 native tests, device compilation and verified
+    artifact packaging. Subsequent documentation-only commits do not change
+    that binary. No Apple account/certificate or paid signing was used.
+
 The prepared workflow skips private-repository Mac jobs before allocation and
 retains artifacts for one day. No private runner minutes or paid-service/billing
 settings were enabled. The standalone IPA was saved for delivery because GitHub
@@ -258,14 +270,14 @@ Swift 5 language mode as configured. No warning was promoted to a device test.
 
 | Module | Implemented and integrated | Verification / remaining gate |
 |---|---|---|
-| 00 Feasibility | Native Settings harness for Gemini response, ElevenLabs playback, RDC discovery/public PKCE and device enumeration | Live metadata/DCR checked. DCR returned confidential client; native consent, token exchange, refresh, revocation, devices and cellular pending |
+| 00 Feasibility | Native Settings harness for Gemini response, ElevenLabs playback, RDC discovery/per-install PKCE and device enumeration | Live metadata/DCR checked. Per-install DCR handling and native Keychain tested; real browser consent, token, devices, actions and cellular pending |
 | 01 Foundation | Four SwiftUI tabs, Keychain, SQLite, typed task/action contracts, native project/icon | Core storage/policy tests pass. Apple Keychain/UI require Xcode/device. No production mock path; Fixture doubles live only in Tests |
 | 02 Gemini | REST/SSE conversation, complete continuation parts, bounded serial tool loop, error/result correlation | Parser/execution tests pass. User key/model inference pending |
 | 03 Desktop | Explicit selection, live schema/device checks, aliases, file search/read, fixed URL/app/path helpers, actual-resource helper | Policy/encoding/evidence-parser tests pass. Real service output shapes and Windows operations remain unverified |
 | 04 Voice | Replaceable TranscriptionProvider, Apple finalized captions, streamed ElevenLabs PCM, stop/replay/mute, independent cancellation, routing/interruption handlers | 64 core and nine native iOS audio tests pass. Physical permissions, speaker/headset and private-key synthesis pending |
 | 05 Research/memory | Separate Google-grounded research tool, sources/support markers/rendered attribution, editable memories, per-device aliases | Citation/UTF-8 tests pass; actual grounding and UI attribution acceptance pending |
-| 06 Recovery | Transactional claims, no duplicate dispatch/replay, persisted unknown outcomes, saved-call reconciliation on resume, public-client refresh/revocation adapter and reported usage limits | Recovery/cancellation/duplicate/refresh fixtures pass. Native suspension/token/server-revocation tests pending |
-| 07 Release | Xcode configuration, actual-build-only unsigned packaging script, SideStore/PC startup instructions and acceptance checklist | Mac arm64 Release build, 64 core + nine iOS audio tests, verified 0.1.3 unsigned IPA PASS; SideStore signing/install and real-device acceptance pending |
+| 06 Recovery | Transactional claims, no duplicate dispatch/replay, persisted unknown outcomes, saved-call reconciliation on resume, per-install refresh/revocation adapter and reported usage limits | Recovery/cancellation/duplicate/refresh fixtures pass. Native suspension/token/server-revocation tests pending |
+| 07 Release | Xcode configuration, actual-build-only unsigned packaging script, SideStore/PC startup instructions and acceptance checklist | Mac arm64 Release build, 81 core + 11 native tests, verified 0.1.4 unsigned IPA PASS; SideStore signing/install and real-device acceptance pending |
 
 All modules use the same app, contracts and persistence. The first vertical slice passes only with deterministic fixtures: text → model tool → validation → persisted action → fixture RDC executor → correlated model response. Real YouTube launch is still pending Module 00. Voice is integrated behind that same execution boundary, not evidence that the live slice passed.
 
@@ -276,7 +288,7 @@ All modules use the same app, contracts and persistence. The first vertical slic
 - Authorization metadata advertises S256, authorization_code, refresh_token, `none` and `client_secret_post`; no revocation endpoint was advertised.
 - One registration requested application_type=native, token auth `none`, callback `com.kellen.blackbox:/oauth/callback`, authorization_code + refresh_token.
 - Response accepted the callback but returned `client_secret_post` and a nonempty secret. Only redacted metadata is in Verification/. The temporary raw registration response was deleted. No secret/client ID was embedded in source and no user grant/token was obtained.
-- App rejects this result. Settings accepts a **provider-issued public native client ID** as the smallest supported configuration change to test. Do not add a secret to the app, borrow ChatGPT tokens or introduce a custom backend as a hidden workaround.
+- 0.1.0–0.1.3 rejected that result. 0.1.4 corrects the public-only assumption using RFC 8252 section 8.4: accept supported, advertised DCR credentials per installation, keep them only in Keychain, retain PKCE/state/exact callback, and authenticate token/refresh with the returned method. No shared secret is embedded and no other application token is reused.
 - Unknown service response formats fail closed. Capture real, redacted native device/tool/search/helper responses after authentication and refine the versioned adapters as needed.
 
 ## Initial Linux checks and provider versions
@@ -314,17 +326,19 @@ All modules use the same app, contracts and persistence. The first vertical slic
 ## Missing inputs / environment
 
 1. User's Gemini API key and available model (enter in native Settings; never paste into handoff/source/logs).
-2. ElevenLabs key and accessible Voice ID are stored on the owner's phone and 0.1.2 metadata success is reported. They are unavailable in this build environment; 0.1.3 live synthesis acceptance remains pending. No target voice was created here.
-3. RDC-confirmed public native registration with token auth none, S256, exact callback, mcp:tools scope, advertised resource audience, refresh and supported grant-revocation route.
+2. ElevenLabs key and accessible Voice ID are stored on the owner's phone and 0.1.2 metadata success is reported. They are unavailable in this build environment; Live private-key speech acceptance remains an owner-side check. No target voice was created here.
+3. Owner completion of Black_Box browser sign-in, exact callback/token exchange and independent device listing; then real refresh/revocation/action acceptance. Public-only provisioning is no longer a prerequisite for 0.1.4.
 4. Actual selected Windows PC/agent online after this app's own OAuth consent; helper path and per-device folder aliases; actual Windows, PowerShell, Node and RDC versions.
-5. User-side SideStore update to 0.1.3 and real speech/output-route acceptance. Native device compilation and simulator audio execution are complete.
+5. User-side SideStore update to 0.1.4, RDC browser authorization and selected-PC/helper acceptance. Native compilation, audio and Keychain execution are complete.
 
 ## Next concrete step
 
-Install 0.1.3 through SideStore over the current app. In Settings, use Test device
-audio (no API usage) and check the Output route, then Test voice (uses API quota).
-The existing selected voice/model/key are retained. Record whether the local
-tone and provider speech are audible on speaker/headset. If a failure remains,
-record its exact stage and sanitized inline reason, never the key. Update
-acceptance with the actual physical-device result. Continue RDC public-native
-registration separately before claiming phone-to-PC control.
+Install 0.1.4 through SideStore over the existing app. Settings → Independent
+RDC sign-in: leave the optional client ID blank, then Sign in with PKCE. Complete
+the browser approval using the account paired to the PC. Computer → Refresh
+paired devices, select the intended online PC, then configure and Check installed
+helper under Settings. The helper script is Desktop/BlackBoxHelper.ps1 in this
+repository. Add per-device named folders before file operations. Test one simple
+observed action (such as Open YouTube) and record the actual result. If a provider
+or callback failure remains, capture its exact sanitized stage/message, never
+a code, token or credential. Do not claim independent PC control before it runs.
