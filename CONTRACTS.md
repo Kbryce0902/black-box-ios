@@ -73,3 +73,19 @@ A terminal result is one complete JSON line with `marker: BLACKBOX_HELPER_V1`, m
   persisted. API key/model/settings changes retain the existing Keychain and
   storage identities across this update.
 
+# ElevenLabs setup and speech (0.1.2)
+
+- Existing display labels normalize to documented model IDs (ElevenV4 becomes
+  eleven_v4). Unknown exact API IDs are retained. Voice ID case is never changed.
+- Metadata GET /v1/models returns an array; only can_do_text_to_speech models
+  enter the native picker. GET /v1/voices/{id} must echo the requested voice_id.
+- ElevenValidationController has explicit checking/result/error states, a
+  25-second deadline and revision guards. Edits/deletion invalidate stale checks.
+- Metadata checks are separate from synthesis. Restricted TTS-only keys may
+  explicitly test speech without read access. Validation never incurs a hidden
+  synthesis request, and synthesis is never automatically retried.
+- POST /v1/text-to-speech/{id}/stream sends JSON text/model_id, xi-api-key in a
+  header and output_format=pcm_24000. No credential is included in a URL.
+- ElevenLabs error.detail object/string/list forms are bounded and redacted
+  before display. HTTP stage/status/reason are retained without raw bodies/keys.
+

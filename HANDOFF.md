@@ -1,7 +1,51 @@
 # Black_Box implementation handoff
 
-Updated 2026-11-01. Source version **0.1.1 development**. Continue this repository;
+Updated 2026-11-01. Source version **0.1.2 development**. Continue this repository;
 do not restart from a proposal.
+
+## ElevenLabs setup/speech fix — 0.1.2
+
+The owner reports HTTP 400 while checking ElevenLabs after supplying a key and
+Voice ID. The screenshot also shows the display label ElevenV4 in the model
+field. The app's voice-only GET did not send a model, so the screenshot alone
+cannot establish the cause of that GET's 400. The old HTTP layer discarded all
+ElevenLabs error bodies. No live private key was available to reproduce it here.
+
+Confirmed and corrected app defects:
+- A typed model label was passed unchanged to speech. Official Eleven v4 API
+  ID is eleven_v4. Known display names now normalize to documented IDs in the
+  client and existing saved preferences; unknown/future exact IDs are retained.
+- Keys and Voice IDs trim copy/paste whitespace; Voice ID case is preserved.
+- Voice/model metadata checks use the documented v1/models and v1/voices/{id}
+  endpoints, validate response types/identity, and populate a TTS-only model
+  picker. Metadata success never implies synthesis or quota success.
+- HTTP and speech-stream errors now preserve bounded/redacted ElevenLabs
+  status/message with a stage label. Missing endpoint permissions, invalid
+  voice/model, quotas and verification errors are distinguished. JSON errors
+  are never decoded as PCM. An unsupported custom Accept header was removed;
+  the documented pcm_24000 query controls raw audio output.
+- A cancellable 25-second metadata deadline and revision IDs reject stale
+  replies after key/voice changes. Normalization feedback does not cancel a
+  newly started check. All model/voice edits save automatically.
+- Test voice (uses API quota), Stop test speech and actual audio result now
+  appear beside setup. A TTS-only key can test speech despite missing read
+  permissions; metadata never becomes a hidden prerequisite for synthesis.
+- Playback distinguishes requesting from receiving audio and rejects an empty
+  stream. It never auto-retries a potentially billed synthesis call.
+- Release 0.1.2, build 3; app, Keychain and SQLite identities are unchanged.
+
+Added 16 focused regressions (64 total expected), covering request construction,
+normalization, read-vs-speech permissions, metadata shapes/voice correlation,
+provider errors/redaction, retries, timeouts and late-response rejection.
+Local plist/YAML/shell checks PASS. The transient Linux Swift toolchain has
+expired; these changes still need the Mac core tests and native compile.
+The prior 0.1.1 evidence below is historical until 0.1.2 is verified.
+
+Official references checked 2026-11-01:
+https://elevenlabs.io/docs/api-reference/voices/get
+https://elevenlabs.io/docs/api-reference/models/list
+https://elevenlabs.io/docs/api-reference/text-to-speech/stream
+https://elevenlabs.io/docs/help-center/product/core-capabilities/text-to-speech/how-do-audio-tags-work-with-eleven-v3-and-v4
 
 ## Gemini setup fix — 0.1.1
 

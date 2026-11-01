@@ -232,11 +232,33 @@ struct SettingsView: View {
                 Section("ElevenLabs voice") {
                     Text(m.hasVoiceKey ? "API key ••••••••" : "No API key stored").font(.caption).foregroundStyle(.secondary)
                     SecureField("Enter replacement API key", text: $voiceKey).textInputAutocapitalization(.never).autocorrectionDisabled()
-                    Button("Store key") { m.perform { try m.saveKey(voiceKey, provider: "elevenlabs"); voiceKey = "" } }
+                    Button("Save and check key") { m.perform { try m.saveKey(voiceKey, provider: "elevenlabs"); voiceKey = "" } }
+                        .disabled(voiceKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                     TextField("Voice ID", text: $m.settings.voiceID).textInputAutocapitalization(.never).autocorrectionDisabled()
+                        .onChange(of: m.settings.voiceID) { _, value in m.voiceIDChanged(value) }
+                        .onSubmit { m.validateVoice() }
                     TextField("Speech model ID", text: $m.settings.speechModel).textInputAutocapitalization(.never).autocorrectionDisabled()
-                    Button("Validate voice access") { m.perform { try await m.validateVoice() } }
-                    Text(m.voiceStatus).font(.caption).textSelection(.enabled)
+                        .onChange(of: m.settings.speechModel) { _, value in m.speechModelChanged(value) }
+                        .onSubmit { m.validateVoice() }
+                    if m.voiceState.isChecking {
+                        ProgressView("Checking ElevenLabs…")
+                        Button("Cancel voice check", role: .cancel) { m.cancelVoiceValidation() }
+                    } else {
+                        Button("Check voice and model") { m.validateVoice() }.disabled(!m.hasVoiceKey)
+                    }
+                    Text(m.voiceState.message).font(.callout)
+                        .foregroundStyle(m.voiceState.phase == .failed ? Color.orange : Color.secondary)
+                        .textSelection(.enabled).accessibilityIdentifier("elevenlabs.connection.status")
+                    if !m.voiceState.models.isEmpty {
+                        Picker("Speech models", selection: $m.settings.speechModel) {
+                            if !m.voiceState.models.contains(where: { $0.id == m.settings.speechModel }) { Text("Choose a model").tag(m.settings.speechModel) }
+                            ForEach(m.voiceState.models) { model in Text(model.name + " · " + model.id).tag(model.id) }
+                        }
+                    }
+                    Button("Test voice (uses API quota)") { m.perform { try m.testVoice() } }
+                        .disabled(!m.hasVoiceKey || m.settings.voiceID.isEmpty || m.voiceState.isChecking || audio.speaking)
+                    if audio.speaking { Button("Stop test speech") { audio.stopSpeech() } }
+                    Text(audio.status).font(.caption).textSelection(.enabled)
                     Button("Delete ElevenLabs key", role: .destructive) { m.perform { try m.deleteKey("elevenlabs") } }
                     Text("Use an accessible authorized voice ID from ElevenLabs. Voice creation and verification are separate from app setup.").font(.caption).foregroundStyle(.secondary)
                 }
@@ -280,7 +302,7 @@ struct SettingsView: View {
                     Button("Open iPhone settings") { if let u = URL(string: UIApplication.openSettingsURLString) { UIApplication.shared.open(u) } }
                 }
             }.navigationTitle("Settings").disabled(m.busy)
-                .task { m.checkSavedGeminiKey() }
+                .task { m.checkSavedGeminiKey(); m.checkSavedVoiceKey() }
                 .sheet(item: $editingMemory) { memory in MemoryEditor(memory: memory, save: { value in m.perform { try m.saveMemory(value) } }) }
         }
     }

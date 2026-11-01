@@ -38,7 +38,7 @@ public actor MCPClient {
     public func initialize(token: String) async throws {
         if ready { return }
         let v = try await request(method: "initialize", params: ["protocolVersion": .string(protocolVersion), "capabilities": [:],
-                                                               "clientInfo": ["name": "Black_Box iOS", "version": "0.1.1"]], token: token)
+                                                               "clientInfo": ["name": "Black_Box iOS", "version": "0.1.2"]], token: token)
         guard let p = v["protocolVersion"].string, ["2025-03-26", "2025-06-18", "2025-11-25"].contains(p) else { throw BBError.wire("Unsupported negotiated MCP protocol version.") }
         protocolVersion = p
         _ = try await request(method: "notifications/initialized", params: [:], token: token, notification: true)

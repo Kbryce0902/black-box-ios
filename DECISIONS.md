@@ -22,6 +22,14 @@
 The Linux SwiftPM test launcher intermittently crashes in this execution host while monitoring `/proc`. A serial build succeeds, and invoking the produced XCTest binary directly succeeds. Both the limitation and the final direct test output are retained. This is a host verification workaround, not an iOS runtime workaround.
 # Compilation follow-up — 2026-11-01
 
+- 0.1.2 preserves the chosen Eleven v4 voice/model intent by translating display
+  labels to documented API IDs. Metadata model/voice results and actual speech
+  remain separate proofs. A failed read-permission check does not block an
+  explicit speech test by a key with Text to Speech access.
+- The observed metadata HTTP 400 cannot be attributed to a model field the GET
+  never sent. Preserve the provider's sanitized reason instead of guessing that
+  a key is invalid. No private key or Voice ID from the screenshot enters source.
+
 - 0.1.1 fixes Gemini setup in the existing app. Saving checks metadata
   automatically, with an independent UI deadline, cancellation and explicit
   inline results. Metadata checks never automatically generate paid inference.

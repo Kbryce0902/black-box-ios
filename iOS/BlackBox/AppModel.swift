@@ -16,7 +16,7 @@ import BlackBoxCore
     @Published var busy = false
     @Published var error: String?
     @Published var geminiState = GeminiValidationSnapshot()
-    @Published var voiceStatus = "Voice access not checked"
+    @Published var voiceState = ElevenValidationSnapshot()
     @Published var helperStatus = "Desktop helpers unverified"
     @Published var checks: [String] = []
     @Published var reviewTool: ValidatedTool?
@@ -27,6 +27,7 @@ import BlackBoxCore
     private var repository: Repository?
     private let vault = KeychainStore()
     private let geminiValidation = GeminiValidationController()
+    private let elevenValidation = ElevenValidationController()
     private var running: Task<Void, Never>?
     private var activeID: String?
     private var reviewContinuation: CheckedContinuation<Bool, Never>?
@@ -49,11 +50,17 @@ import BlackBoxCore
             let store = try Repository(path: root.appendingPathComponent("blackbox.sqlite").path)
             repository = store
             settings = try store.all(AppSettings.self, kind: "settings").first ?? AppSettings()
+            let speechModel = ElevenLabsClient.normalizedModelID(settings.speechModel)
+            if speechModel != settings.speechModel {
+                settings.speechModel = speechModel; try store.save(settings, kind: "settings", id: "main")
+            }
             checks = try store.all([String].self, kind: "diagnostics").first ?? []
             try store.recover(); try reload(); try refreshKeyPresence()
         } catch { self.error = "Local startup failed: \(error.localizedDescription). Existing data was preserved." }
         geminiValidation.onChange = { [weak self] in self?.geminiState = $0 }
         if hasGeminiKey { geminiValidation.keyStored() }
+        elevenValidation.onChange = { [weak self] in self?.voiceState = $0 }
+        if hasVoiceKey { elevenValidation.keyStored() }
         audio.onFinal = { [weak self] text in
             guard let self, !self.busy else { return }; self.draft = text; self.send()
         }
@@ -74,12 +81,12 @@ import BlackBoxCore
         guard ["gemini", "elevenlabs"].contains(provider) else { throw BBError.invalid("Unknown key provider.") }
         try vault.set(Data(key.utf8), account: provider); try refreshKeyPresence()
         if provider == "gemini" { geminiValidation.keyStored(); validateGemini() }
-        else { voiceStatus = "Voice key saved. Enter a voice ID, then check voice access." }
+        else { audio.stopSpeech(); elevenValidation.keyStored(); validateVoice() }
     }
     func deleteKey(_ provider: String) throws {
         try vault.delete(provider); try refreshKeyPresence()
         if provider == "gemini" { geminiValidation.clear() }
-        else { voiceStatus = "Voice key removed" }
+        else { elevenValidation.clear(); audio.stopSpeech() }
     }
     func gemini() throws -> GeminiClient { GeminiClient(key: try vault.string("gemini"), model: settings.model) }
     func voice() throws -> ElevenLabsClient { ElevenLabsClient(key: try vault.string("elevenlabs"), voiceID: settings.voiceID, model: settings.speechModel) }
@@ -98,12 +105,28 @@ import BlackBoxCore
         geminiValidation.selectModel(value)
         do { try saveSettings() } catch { self.error = error.localizedDescription }
     }
-    func validateVoice() async throws {
-        voiceStatus = "Checking voice access…"
+    private func normalizeVoiceSettings() throws {
+        settings.voiceID = ElevenLabsClient.normalizedVoiceID(settings.voiceID)
+        settings.speechModel = ElevenLabsClient.normalizedModelID(settings.speechModel)
+        try saveSettings()
+    }
+    func validateVoice() {
         do {
-            try await voice().validate(); voiceStatus = "Voice access checked. Playback still needs a listening test."
-            recordCheck("PASS · ElevenLabs voice access. Playback still needs a listening test.")
-        } catch { voiceStatus = error.localizedDescription; throw error }
+            try normalizeVoiceSettings()
+            elevenValidation.check(key: try vault.string("elevenlabs"), voiceID: settings.voiceID, model: settings.speechModel)
+        } catch { elevenValidation.fail(error) }
+    }
+    func cancelVoiceValidation() { elevenValidation.cancel() }
+    func checkSavedVoiceKey() {
+        if hasVoiceKey, !settings.voiceID.isEmpty, voiceState.phase == .stored { validateVoice() }
+    }
+    func voiceIDChanged(_ value: String) {
+        elevenValidation.voiceChanged(value)
+        do { try saveSettings() } catch { self.error = error.localizedDescription }
+    }
+    func speechModelChanged(_ value: String) {
+        elevenValidation.selectModel(value)
+        do { try saveSettings() } catch { self.error = error.localizedDescription }
     }
     func testGemini() async throws {
         let reply = try await gemini().generate(history: [["role": "user", "parts": [["text": "Reply with: Black_Box online."]]]], system: "Keep the response to one sentence.", tools: [], grounded: false, onText: { _ in })
@@ -113,7 +136,11 @@ import BlackBoxCore
         checks.insert("\(Date().formatted(date: .abbreviated, time: .standard)) · \(text)", at: 0)
         do { try repository?.save(checks, kind: "diagnostics", id: "main") } catch { self.error = error.localizedDescription }
     }
-    func testVoice() throws { audio.speak("Black Box online. A promising start.", client: try voice()); recordCheck("STARTED · ElevenLabs playback test. Confirm audible output on the device.") }
+    func testVoice() throws {
+        try normalizeVoiceSettings()
+        audio.speak("Black Box online. A promising start.", client: try voice())
+        recordCheck("STARTED · ElevenLabs playback test. Confirm audible output on the device.")
+    }
     func select(_ id: String?) throws { guard !busy else { throw BBError.invalid("Cancel or finish the active task before selecting another PC.") }; settings.selectedDeviceID = id; verifiedHelperDevice = nil; try saveSettings() }
     func verifyHelper() async throws {
         guard let device = selected, device.online else { throw BBError.setup("Select an online PC first.") }
@@ -160,7 +187,7 @@ import BlackBoxCore
         if let activeID { do { try repository?.cancel(activeID); try reload() } catch { self.error = error.localizedDescription } }
         confirmReview(false); running?.cancel(); audio.cancelCapture()
     }
-    func suspend() { cancelTask(); geminiValidation.cancel(); audio.interrupt(); verifiedHelperDevice = nil }
+    func suspend() { cancelTask(); geminiValidation.cancel(); elevenValidation.cancel(); audio.interrupt(); verifiedHelperDevice = nil }
     func resume() async {
         do {
             if !busy { try repository?.recover(); try reload() }

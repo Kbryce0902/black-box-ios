@@ -62,12 +62,13 @@ import BlackBoxCore
             do {
                 let audio = AVAudioSession.sharedInstance()
                 try audio.setCategory(.playback, mode: .spokenAudio, options: [.allowBluetoothA2DP])
-                try audio.setActive(true); try playbackEngine.start(); player.play(); speaking = true; status = "Streaming ElevenLabs audio"
+                try audio.setActive(true); try playbackEngine.start(); player.play(); speaking = true; status = "Requesting ElevenLabs speech…"
                 let stream = try await client.audio(text: text)
-                var decoder = PCM16Decoder()
+                var decoder = PCM16Decoder(); var sampleCount = 0
                 for try await chunk in stream {
                     try Task.checkCancellation(); guard epoch == generation else { return }
                     let samples = decoder.decode(chunk); if samples.isEmpty { continue }
+                    sampleCount += samples.count; status = "Playing ElevenLabs speech"
                     guard let format = AVAudioFormat(standardFormatWithSampleRate: 24000, channels: 1),
                           let buffer = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: AVAudioFrameCount(samples.count)) else { throw BBError.wire("Could not allocate audio buffer.") }
                     buffer.frameLength = buffer.frameCapacity
@@ -82,6 +83,7 @@ import BlackBoxCore
                     }
                 }
                 try decoder.finish()
+                guard sampleCount > 0 else { throw BBError.wire("ElevenLabs returned no playable audio. Check the voice/model and test again.") }
                 if epoch == generation { speaking = false; status = "Speech complete" }
             } catch {
                 if epoch == generation { player.stop(); playbackEngine.stop(); speaking = false; status = error is CancellationError ? "Speech stopped" : error.localizedDescription }
